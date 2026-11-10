@@ -56,25 +56,393 @@
   <main class="max-w-6xl mx-auto px-4 mt-8 space-y-6">
 
     <!-- ARCHIVAL RETRIEVAL SUITE -->
-    <section class="bg-zinc-900/90 border border-amber-500/30 rounded-xl p-5 shadow-2Perfect, this main repository screen is the exact right place to start!
+    <section class="bg-zinc-900/90 border border-amber-500/30 rounded-xl p-5 shadow-2xl space-y-5">
+      
+      <!-- Search Input Bar -->
+      <div class="flex flex-col sm:flex-row gap-3">
+        <div class="relative flex-1">
+          <input type="text" id="searchInput" onkeyup="executeSearch()" 
+            placeholder="Search titles, transcripts, controlled subjects (e.g. Hag AND Bargain)..." 
+            class="w-full bg-zinc-950 border border-zinc-700 text-zinc-100 placeholder-zinc-500 px-4 py-3 rounded-lg focus:outline-none focus:border-amber-400 font-mono text-sm">
+        </div>
+        <button onclick="executeSearch()" class="px-6 py-3 bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold rounded-lg text-sm transition-colors cinzel">
+          Execute Search
+        </button>
+        <button onclick="toggleBooleanGuide()" class="px-4 py-3 bg-zinc-800 hover:bg-zinc-700 text-amber-400 font-mono text-xs rounded-lg border border-zinc-700 transition">
+          ℹ️ Boolean Syntax Guide
+        </button>
+      </div>
 
-Here is the step-by-step path from this view:
+      <!-- Collapsible Boolean Syntax Helper Panel -->
+      <div id="booleanGuidePanel" class="hidden p-4 bg-zinc-950 border border-amber-500/30 rounded-lg space-y-3 font-mono text-xs text-zinc-300">
+        <div class="flex items-center justify-between border-b border-zinc-800 pb-2">
+          <span class="text-amber-400 font-bold uppercase tracking-wider">📜 Archival Boolean Retrieval Operator Guide</span>
+          <span class="text-zinc-500 text-[10px]">Case-Insensitive Evaluator</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div class="p-2.5 bg-zinc-900 border border-zinc-800 rounded">
+            <span class="text-emerald-400 font-bold">TERM_A AND TERM_B</span>
+            <p class="text-zinc-400 text-[11px] mt-1">Returns records matching <em>both</em> terms across metadata and text.</p>
+            <button onclick="applySampleQuery('Hag AND Bargain')" class="mt-2 text-[10px] text-amber-300 bg-amber-950/60 border border-amber-500/40 px-2 py-0.5 rounded hover:bg-amber-900/80">Try: Hag AND Bargain</button>
+          </div>
+          <div class="p-2.5 bg-zinc-900 border border-zinc-800 rounded">
+            <span class="text-purple-400 font-bold">TERM_A OR TERM_B</span>
+            <p class="text-zinc-400 text-[11px] mt-1">Returns records containing <em>either</em> term in indexed fields.</p>
+            <button onclick="applySampleQuery('Necromancy OR Ritual')" class="mt-2 text-[10px] text-amber-300 bg-amber-950/60 border border-amber-500/40 px-2 py-0.5 rounded hover:bg-amber-900/80">Try: Necromancy OR Ritual</button>
+          </div>
+          <div class="p-2.5 bg-zinc-900 border border-zinc-800 rounded">
+            <span class="text-orange-400 font-bold">NOT TERM</span>
+            <p class="text-zinc-400 text-[11px] mt-1">Excludes any records containing the specified query term.</p>
+            <button onclick="applySampleQuery('NOT Cult')" class="mt-2 text-[10px] text-amber-300 bg-amber-950/60 border border-amber-500/40 px-2 py-0.5 rounded hover:bg-amber-900/80">Try: NOT Cult</button>
+          </div>
+        </div>
+      </div>
 
-1. **Find `index.html` in the list:**
-   Scroll down the file list on your screen until you see **`index.html`** (it will be near the bottom, right around where `src/App.jsx` is listed)[cite: 14].
+      <!-- Filters & Sort Controls -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-2 border-t border-zinc-800/80 font-mono text-xs">
+        <div>
+          <label class="block text-zinc-400 text-[10px] uppercase tracking-wider mb-1">📦 Storage Container</label>
+          <select id="containerSelect" onchange="applyFilters()" class="w-full bg-zinc-950 border border-zinc-700 text-zinc-200 px-3 py-2 rounded focus:outline-none focus:border-amber-400">
+            <option value="all">All Storage Containers</option>
+            <option value="Book Bag">🎒 Book Bag (BB)</option>
+            <option value="Bag of Holding">🧳 Bag of Holding (BOH)</option>
+          </select>
+        </div>
 
-2. **Open the file:**
-   Click directly on **`index.html`**.
+        <div>
+          <label class="block text-zinc-400 text-[10px] uppercase tracking-wider mb-1">🔊 Audio Stream Status</label>
+          <select id="audioSelect" onchange="applyFilters()" class="w-full bg-zinc-950 border border-zinc-700 text-zinc-200 px-3 py-2 rounded focus:outline-none focus:border-amber-400">
+            <option value="all">All Media Statuses</option>
+            <option value="hasAudio">🔊 Audio Streaming Available</option>
+            <option value="pendingAudio">⏳ Archival Recording Pending</option>
+          </select>
+        </div>
 
-3. **Click the Edit Pencil:**
-   In the top-right corner of the file box (above line 1), click the **pencil icon (✏️)** to open the interactive editor.
+        <div>
+          <label class="block text-zinc-400 text-[10px] uppercase tracking-wider mb-1">🔤 Sort Order</label>
+          <select id="sortSelect" onchange="applyFilters()" class="w-full bg-zinc-950 border border-zinc-700 text-amber-400 font-semibold px-3 py-2 rounded focus:outline-none focus:border-amber-400">
+            <option value="id">Archive ID (Default)</option>
+            <option value="titleAZ">Title (A – Z)</option>
+            <option value="titleZA">Title (Z – A)</option>
+          </select>
+        </div>
+      </div>
 
-4. **Select and replace the script:**
-   * Scroll down to the bottom of the file where `<script>` begins.
-   * Highlight everything from `<script>` down to `</script>` at the end of the file.
-   * Delete that section and paste the clean code block from above.
+      <!-- Controlled Vocabulary Bar -->
+      <div class="pt-2 border-t border-zinc-800/60">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[10px] font-mono uppercase tracking-wider text-amber-400 font-bold">🏷️ Controlled Vocabulary Index (Click to Filter Subject)</span>
+          <button onclick="resetAllFilters()" class="text-[10px] font-mono text-zinc-500 hover:text-amber-400 underline">Reset All Filters</button>
+        </div>
+        <div id="controlledVocabBar" class="flex flex-wrap gap-1.5">
+          <!-- Injected dynamically -->
+        </div>
+      </div>
 
-5. **Commit the changes:**
-   Click the green **"Commit changes..."** button at the top right of the page.
+    </section>
 
-Once committed, give GitHub Pages about 60 seconds to update, then do a hard refresh on your live site (**`Ctrl + F5`** or **`Cmd + Shift + R`**)!
+    <!-- Records Feed -->
+    <section id="recordsContainer" class="grid grid-cols-1 gap-6">
+      <div class="p-8 text-center bg-zinc-900 border border-zinc-800 rounded-xl font-mono text-sm text-amber-400 animate-pulse">
+        ⏳ Fetching live collection records from Google Sheets...
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Reader Pop-Out Modal -->
+  <div id="textModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-zinc-900 border border-amber-500/40 rounded-xl max-w-3xl w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+      <div class="p-4 border-b border-zinc-800 flex items-center justify-between bg-zinc-950">
+        <div>
+          <h3 id="modalTitle" class="cinzel text-lg font-bold text-amber-400">Item Title</h3>
+          <p id="modalRef" class="text-xs font-mono text-zinc-400"></p>
+        </div>
+        <button onclick="closeModal()" class="text-zinc-400 hover:text-amber-400 text-2xl font-bold px-3">
+          &times;
+        </button>
+      </div>
+      <div id="modalBody" class="p-6 overflow-y-auto space-y-4">
+        <!-- Transcript injected dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const RAW_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRvHgsh0UiBphbrCs3gOzkpAWxDREwOYG_sR7Kii-7NSq9_VpRjhUDlGNhTyuP3gQ/pub?gid=327381678&single=true&output=csv";
+    const PROXY_URL = "https://api.allorigins.win/raw?url=" + encodeURIComponent(RAW_CSV_URL);
+
+    let archiveData = [];
+    let filteredData = [];
+
+    function initArchive() {
+      Papa.parse(RAW_CSV_URL, {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+          if (results.data && results.data.length > 0) {
+            processCSVResults(results.data);
+          } else {
+            tryProxy();
+          }
+        },
+        error: function() {
+          tryProxy();
+        }
+      });
+    }
+
+    function tryProxy() {
+      Papa.parse(PROXY_URL, {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+          if (results.data && results.data.length > 0) {
+            processCSVResults(results.data);
+          } else {
+            showError("No valid records found in published Google Sheet.");
+          }
+        },
+        error: function(err) {
+          console.error("CSV Fetch Error:", err);
+          showError("Failed to fetch Google Sheets database. Verify published sheet settings.");
+        }
+      });
+    }
+
+    function processCSVResults(rawData) {
+      archiveData = rawData.map((row, index) => {
+        const getVal = (...keys) => {
+          const rowKeys = Object.keys(row);
+          for (let k of keys) {
+            const target = k.toLowerCase().replace(/[^a-z0-9]/g, '');
+            const foundKey = rowKeys.find(rk => rk.toLowerCase().replace(/[^a-z0-9]/g, '') === target);
+            if (foundKey && row[foundKey] !== undefined && row[foundKey] !== null) {
+              return String(row[foundKey]).trim();
+            }
+          }
+          return "";
+        };
+
+        const itemId = getVal("Audio_Path", "Item_ID", "ItemID", "Item ID", "ID") || `RECORD-${index + 1}`;
+        const title = getVal("Item_Name", "ItemName", "Item Name", "Title", "Name") || "Untitled Record";
+        const docType = getVal("Doc_Type", "DocType", "Format", "Type") || "Manuscripts";
+        const summary = getVal("Narrative_Summary", "Doc_Description", "Description", "Summary") || "";
+        const text = getVal("Text", "Full_Doc_Path", "Transcript", "Content") || "";
+        const coords = getVal("Location_Coordinates", "X/Y_Coordinates", "Coordinates", "Location") || "Faerûn";
+        const rationale = getVal("Archival_Rationale", "Rationale", "Archivist Note") || "";
+        const duration = getVal("Duration") || "";
+        const narrator = getVal("Voice_Artist", "Voice Artist", "Narrator") || "Chelsea Jones";
+        const wikiLink = getVal("BG3_Wiki_Link", "Wiki Link", "Link") || "";
+
+        const rawSubjects = getVal("Controlled_Vocabulary", "Subject_Headings", "Subjects", "Tags") || "";
+        const subjects = rawSubjects.split(/;|,/).map(s => s.trim()).filter(Boolean);
+
+        const rawContainer = getVal("Storage_Container", "Container") || "";
+        const container = rawContainer || (itemId.includes("SCL-BOH") ? "Bag of Holding" : "Book Bag");
+
+        const audioPath = getVal("Audio_Path", "AudioPath", "Audio") || "";
+        let audioUrl = "";
+        if (audioPath && !audioPath.startsWith("http")) {
+          audioUrl = `https://github.com/chelseajones-a11y/astral-prism-archive/raw/refs/heads/main/${audioPath}`;
+        } else {
+          audioUrl = audioPath;
+        }
+
+        return {
+          id: itemId,
+          title: title,
+          container: container,
+          subLocation: coords,
+          format: docType,
+          summary: summary,
+          subjects: subjects,
+          archivistNote: rationale,
+          text: text,
+          audioUrl: audioUrl,
+          duration: duration,
+          narrator: narrator,
+          wikiLink: wikiLink
+        };
+      }).filter(item => item.id !== "" || item.title !== "Untitled Record" || item.summary !== "");
+
+      filteredData = [...archiveData];
+      renderControlledVocabularyBar();
+      renderCards();
+    }
+
+    function showError(msg) {
+      document.getElementById('recordsContainer').innerHTML = `
+        <div class="p-8 text-center bg-red-950/40 border border-red-500/40 rounded-xl text-red-300 font-mono text-sm">
+          ⚠️ ${msg}
+        </div>
+      `;
+    }
+
+    function renderControlledVocabularyBar() {
+      const vocabContainer = document.getElementById('controlledVocabBar');
+      const allSubjects = new Set();
+      archiveData.forEach(item => (item.subjects || []).forEach(s => allSubjects.add(s)));
+      
+      vocabContainer.innerHTML = Array.from(allSubjects).sort().map(subject => `
+        <button onclick="filterBySubject('${subject.replace(/'/g, "\\'")}')" class="px-2.5 py-1 bg-zinc-950 hover:bg-amber-950/60 text-zinc-300 hover:text-amber-300 border border-zinc-800 hover:border-amber-500/50 rounded-full font-mono text-[11px] transition">
+          #${subject}
+        </button>
+      `).join('');
+    }
+
+    function renderCards() {
+      const container = document.getElementById('recordsContainer');
+      if (filteredData.length === 0) {
+        container.innerHTML = `
+          <div class="p-8 text-center bg-zinc-900 border border-zinc-800 rounded-xl">
+            <p class="text-zinc-400 font-mono text-sm">No archive records match your current filter selection.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filteredData.map(item => `
+        <article class="bg-zinc-900 border border-zinc-800 hover:border-amber-500/40 rounded-xl p-5 transition space-y-4 shadow-lg">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-zinc-800/80 pb-3">
+            <div>
+              <span class="text-xs font-mono text-amber-400 font-bold px-2 py-0.5 bg-amber-950/50 border border-amber-500/30 rounded">
+                ${item.id}
+              </span>
+              <h2 class="cinzel text-xl font-bold text-zinc-100 mt-2">${item.title}</h2>
+            </div>
+            <div class="text-right text-xs font-mono text-zinc-400 space-y-1">
+              <div>📍 <span class="text-zinc-300">${item.subLocation}</span></div>
+              <div>📦 <span class="text-zinc-300">${item.container}</span></div>
+            </div>
+          </div>
+
+          <p class="text-sm text-zinc-300 leading-relaxed">${item.summary}</p>
+
+          ${item.subjects.length ? `
+            <div class="flex flex-wrap gap-1.5 pt-1">
+              ${item.subjects.map(s => `<span class="px-2 py-0.5 bg-zinc-950 text-amber-300/90 border border-zinc-800 rounded font-mono text-[10px]">#${s}</span>`).join('')}
+            </div>
+          ` : ''}
+
+          <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-zinc-800/60 text-xs">
+            <div class="flex items-center gap-3">
+              ${item.text ? `
+                <button onclick="openModal('${item.id}')" class="px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded font-mono transition">
+                  📖 Read Transcript
+                </button>
+              ` : ''}
+              ${item.wikiLink ? `
+                <a href="${item.wikiLink}" target="_blank" class="text-zinc-400 hover:text-amber-400 font-mono underline">
+                  🔗 BG3 Wiki
+                </a>
+              ` : ''}
+            </div>
+            ${item.audioUrl ? `
+              <audio controls class="h-8 max-w-[220px]">
+                <source src="${item.audioUrl}" type="audio/mpeg">
+              </audio>
+            ` : '<span class="text-zinc-500 font-mono text-[11px]">⏳ Audio Pending</span>'}
+          </div>
+        </article>
+      `).join('');
+    }
+
+    function executeSearch() {
+      applyFilters();
+    }
+
+    function toggleBooleanGuide() {
+      const panel = document.getElementById('booleanGuidePanel');
+      panel.classList.toggle('hidden');
+    }
+
+    function applySampleQuery(q) {
+      document.getElementById('searchInput').value = q;
+      executeSearch();
+    }
+
+    function filterBySubject(subj) {
+      document.getElementById('searchInput').value = subj;
+      executeSearch();
+    }
+
+    function resetAllFilters() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('containerSelect').value = 'all';
+      document.getElementById('audioSelect').value = 'all';
+      document.getElementById('sortSelect').value = 'id';
+      applyFilters();
+    }
+
+    function applyFilters() {
+      const query = document.getElementById('searchInput').value.trim().toLowerCase();
+      const containerFilter = document.getElementById('containerSelect').value;
+      const audioFilter = document.getElementById('audioSelect').value;
+      const sortFilter = document.getElementById('sortSelect').value;
+
+      filteredData = archiveData.filter(item => {
+        if (containerFilter !== 'all' && item.container !== containerFilter) return false;
+        if (audioFilter === 'hasAudio' && !item.audioUrl) return false;
+        if (audioFilter === 'pendingAudio' && item.audioUrl) return false;
+
+        if (query) {
+          const searchable = `${item.id} ${item.title} ${item.summary} ${item.subjects.join(' ')} ${item.text}`.toLowerCase();
+          if (query.includes(' and ')) {
+            const terms = query.split(' and ').map(t => t.trim());
+            return terms.every(t => searchable.includes(t));
+          } else if (query.includes(' or ')) {
+            const terms = query.split(' or ').map(t => t.trim());
+            return terms.some(t => searchable.includes(t));
+          } else if (query.startsWith('not ')) {
+            const term = query.replace('not ', '').trim();
+            return !searchable.includes(term);
+          } else {
+            return searchable.includes(query);
+          }
+        }
+        return true;
+      });
+
+      if (sortFilter === 'titleAZ') {
+        filteredData.sort((a, b) => a.title.localeCompare(b.title));
+      } else if (sortFilter === 'titleZA') {
+        filteredData.sort((a, b) => b.title.localeCompare(a.title));
+      } else {
+        filteredData.sort((a, b) => a.id.localeCompare(b.id));
+      }
+
+      renderCards();
+    }
+
+    function openModal(id) {
+      const item = archiveData.find(i => i.id === id);
+      if (!item) return;
+
+      document.getElementById('modalTitle').innerText = item.title;
+      document.getElementById('modalRef').innerText = `${item.id} • ${item.subLocation}`;
+      document.getElementById('modalBody').innerHTML = `
+        <div class="space-y-4 text-zinc-300 text-sm leading-relaxed">
+          ${item.archivistNote ? `
+            <div class="p-3 bg-zinc-950 border border-amber-500/20 rounded text-xs text-amber-200/90 font-mono">
+              <strong>Archivist Note:</strong> ${item.archivistNote}
+            </div>
+          ` : ''}
+          <div class="whitespace-pre-wrap font-serif bg-zinc-950 p-4 border border-zinc-800 rounded">
+            ${item.text || 'No transcript text available.'}
+          </div>
+        </div>
+      `;
+      document.getElementById('textModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('textModal').classList.add('hidden');
+    }
+
+    document.addEventListener('DOMContentLoaded', initArchive);
+  </script>
+</body>
+</html>
