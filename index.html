@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>✨ ASTRAL PRISM ARCHIVE ✨</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- PapaParse for CSV parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -37,7 +39,6 @@
         Faerûn Audio Transcripts, Books, Recipes, Journals, Tomes & Field Records
       </p>
       
-      <!-- Act Progress Tracking Badges -->
       <div class="flex flex-wrap items-center justify-center gap-3 text-xs font-mono">
         <span class="px-3 py-1 bg-emerald-950/80 text-emerald-400 border border-emerald-500/40 rounded-full font-semibold">
           ✓ Act I: Completed
@@ -187,7 +188,9 @@
 
     <!-- Archive Records Grid Feed -->
     <section id="recordsContainer" class="grid grid-cols-1 gap-6">
-      <!-- Dynamic JS Content Injected Here -->
+      <div class="p-8 text-center bg-zinc-900 border border-zinc-800 rounded-xl font-mono text-sm text-amber-400 animate-pulse">
+        ⏳ Fetching live collection records from Google Sheets...
+      </div>
     </section>
 
   </main>
@@ -211,126 +214,65 @@
   </div>
 
   <script>
-    // FULL MASTER DATASET: Combined Book Bag (BB) & Bag of Holding (BOH)
-    const archiveData = [
-      {// OFFICIAL DATASET FROM SCL_MASTER_DATABASE.XLSX
-    const archiveData = [
-      {
-        id: "SCL-BB-04-01",
-        title: "A Brush with Evil: On Hags",
-        container: "Book Bag",
-        location: "Wilderness",
-        subLocation: "Blighted Village (Cellar / Hag Lair)",
-        coords: "X: 38, Y: 378",
-        quest: "Search the Cellar",
-        format: "Manuscripts",
-        summary: "Operational field guide profiling hag biology, illusions, and bargain-making behavior. Warns adventurers against trusting teahouse illusions and accepting deceptive deals.",
-        subjects: ["Hags", "Auntie Ethel", "Fey Creatures", "Deceptive Magic", "Putrid Bog"],
-        assignedTo: ["Paige", "Wyll"],
-        archivistNote: "Mandatory reading for Wyll before confronting Auntie Ethel in the Sunlit Wetlands to prevent rash bargain deals.",
-        text: "Hags are creatures of ancient power and pure malice. They prey upon the innocent, corrupting desire into despair through their dark bargains.\n\nBeware their cravens and covens alike: a single hag is a terrifying opponent, but a coven of three wields magic capable of rending entire lands apart.\n\nShould you encounter one, remember this—never strike a deal, for a hag's mercy is far worse than her cruelty.",
-        audioUrl: "https://github.com/chelseajones-a11y/astral-prism-archive/raw/refs/heads/main/SCL-BB-04-01_Audio_ABrushWithEvilOnHags.mp3.m4a",
-        duration: "3:06",
-        narrator: "Paige Turner, MLIS"
-      },
-      {
-        id: "SCL-BB-04-02",
-        title: "A is For Azuth and Other Gods II",
-        container: "Book Bag",
-        location: "Wilderness",
-        subLocation: "Blighted Village (Schoolhouse)",
-        coords: "X: 18, Y: 432",
-        quest: "Search the Cellar",
-        format: "Manuscripts",
-        summary: "Introductory theological survey documenting divine domains, clerical duties, and pantheon classifications across the Sword Coast.",
-        subjects: ["Theology", "Azuth", "Faerûnian Pantheon", "Divine Domains", "Primer Series"],
-        assignedTo: ["Gale", "Shadowheart"],
-        archivistNote: "Gale requested this volume to cross-reference Mystra's divine domain hierarchy against ancient Netherese arcane rites.",
-        text: "Azuth, God of Wizards and Arcane Knowledge, holds that magic must be preserved, studied, and taught responsibly.\n\nThis volume introduces primary deities of the Sword Coast, outlining sacred tenets, clerical domains, and divine portfolios.",
-        audioUrl: "",
-        duration: "Coming Soon",
-        narrator: "Archival Recording Pending"
-      },
-      {
-        id: "SCL-BB-04-03",
-        title: "A is For Azuth and Other Gods III",
-        container: "Book Bag",
-        location: "Wilderness",
-        subLocation: "Blighted Village (Schoolhouse)",
-        coords: "X: 20, Y: 435",
-        quest: "Search the Cellar",
-        format: "Manuscripts",
-        summary: "Volume III of the acolyte theological survey focusing on planar interactions and clerical devotion rites.",
-        subjects: ["Theology", "Azuth", "Divine Domains", "Primer Series"],
-        assignedTo: ["Gale"],
-        archivistNote: "Secondary primer assigned to Gale for arcane background review.",
-        text: "Devotion is the vessel through which divine magic manifests. True wizards study both the raw Weave and the hands that guide it.",
-        audioUrl: "",
-        duration: "Coming Soon",
-        narrator: "Archival Recording Pending"
-      },
-      {
-        id: "SCL-BB-04-06",
-        title: "A Pleasurable Deal",
-        container: "Book Bag",
-        location: "Wilderness",
-        subLocation: "The Risen Road (Tollhouse)",
-        coords: "X: 105, Y: 560",
-        quest: "Hunt the Devil",
-        format: "Manuscripts",
-        summary: "Contractual record and narrative warning concerning devil pacts, bargain terms, and infernal soul transactions.",
-        subjects: ["Infernal Pacts", "Devils", "Soul Contracts", "Fiends", "Risen Road"],
-        assignedTo: ["Wyll", "Karlach", "Astarion"],
-        archivistNote: "Assigned to Wyll & Karlach to analyze Mizora's infernal contract clauses.",
-        text: "A pact signed in blood can never be undone by mortal tears. The archdevil Raphael and his kin offer earthly desire in exchange for immortal servitude.\n\nInspect every clause, for infernal legalese conceals traps deeper than the Nine Hells.",
-        audioUrl: "",
-        duration: "Coming Soon",
-        narrator: "Archival Recording Pending"
-      },
-      {
-        id: "SCL-BOH-01-01",
-        title: "Book of Dead Gods",
-        container: "Bag of Holding",
-        location: "Underdark",
-        subLocation: "Dank Crypt (Jergal Shrine)",
-        coords: "X: -290, Y: -300",
-        quest: "Explore the Ruins",
-        format: "Manuscripts",
-        summary: "High-mortality theological chronicle cataloging extinct deities, divine fall cycles, and forbidden planar mortality lore.",
-        subjects: ["Jergal", "Dead Gods", "Eschatology", "Fallen Deities", "Banned Literature"],
-        assignedTo: ["Paige", "Gale", "Shadowheart"],
-        archivistNote: "Inspected upon discovering Withers inside the sarcophagus to verify Jergal's ledger history.",
-        text: "Names written in faded blood: gods of forgotten ages who faded when mortals ceased to pray.\n\nJergal records them all, holding the ledger until the end of time itself.",
-        audioUrl: "",
-        duration: "Coming Soon",
-        narrator: "Archival Recording Pending"
-      },
-      {
-        id: "SCL-BOH-01-08",
-        title: "Account of the Establishment of Creche Yllek",
-        container: "Bag of Holding",
-        location: "Rosymorn Monastery",
-        subLocation: "Rosymorn Monastery (Crèche Y'llek)",
-        coords: "X: 72, Y: 140",
-        quest: "Steal a Githyanki Egg",
-        format: "Manuscripts",
-        summary: "Military log detailing the Githyanki conquest of Lathanderian sacred grounds into a martial hatching crèche.",
-        subjects: ["Githyanki", "Crèche Yllek", "Rosymorn Monastery", "Vlaakith", "Conquest Logs"],
-        assignedTo: ["Laezel", "Paige"],
-        archivistNote: "Lae'zel's priority field briefing document before approaching Inquisitor W'wargaz.",
-        text: "By order of Queen Vlaakith, the Lathanderian retreat of Rosymorn Monastery has been cleansed.\n\nIt now serves as Crèche Y'llek, a fortress for breeding warriors untainted by soft surface philosophies.",
-        audioUrl: "",
-        duration: "Coming Soon",
-        narrator: "Archival Recording Pending"
-      }
-    ];
-       
-      }
-    ];
+    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRvHgsh0UiBphbrCs3gOzkpAWxDREwOYG_sR7Kii-7NSq9_VpRjhUDlGNhTyuP3gQ/pub?output=csv";
 
-    let currentRawData = [...archiveData];
-    let filteredData = [...archiveData];
+    let archiveData = [];
+    let filteredData = [];
     let activePartyFilter = 'all';
+
+    function initArchive() {
+      Papa.parse(CSV_URL, {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+          archiveData = results.data.map(row => {
+            const rawSubjects = row["Controlled_Vocabulary"] || row["Subject_Headings"] || "";
+            const subjects = rawSubjects.split(';').map(s => s.trim()).filter(Boolean);
+
+            const container = (row["Item_ID"] || "").includes("SCL-BB") ? "Book Bag" : "Bag of Holding";
+            const audioPath = row["Audio_Path"] || "";
+            let audioUrl = "";
+            if (audioPath && !audioPath.startsWith("http")) {
+              audioUrl = `https://github.com/chelseajones-a11y/astral-prism-archive/raw/refs/heads/main/${audioPath}`;
+            } else {
+              audioUrl = audioPath;
+            }
+
+            return {
+              id: row["Item_ID"] || "",
+              title: row["Item_Name"] || "Untitled Record",
+              container: container,
+              location: row["Location"] || "Wilderness",
+              subLocation: row["Sub_Location"] || row["X/Y_Coordinates"] || "",
+              coords: row["X/Y_Coordinates"] || "",
+              quest: row["Quest"] || "Explore",
+              format: row["Doc_Type"] || "Manuscripts",
+              summary: row["Narrative_Summary"] || row["Doc_Description"] || "",
+              subjects: subjects,
+              assignedTo: (row["Assigned_Companion"] || "Paige").split(';').map(c => c.trim()),
+              archivistNote: row["Archival_Rationale"] || "",
+              text: row["Text"] || "",
+              audioUrl: audioUrl,
+              duration: row["Duration"] || "",
+              narrator: row["Voice_Artist"] || "Chelsea Jones"
+            };
+          });
+
+          filteredData = [...archiveData];
+          renderControlledVocabularyBar();
+          renderCards();
+        },
+        error: function(err) {
+          console.error("CSV Fetch Error:", err);
+          document.getElementById('recordsContainer').innerHTML = `
+            <div class="p-8 text-center bg-red-950/40 border border-red-500/40 rounded-xl text-red-300 font-mono text-sm">
+              ⚠️ Failed to fetch Google Sheets database CSV. Check network tab or sheet permissions.
+            </div>
+          `;
+        }
+      });
+    }
 
     function renderControlledVocabularyBar() {
       const vocabContainer = document.getElementById('controlledVocabBar');
@@ -338,7 +280,7 @@
       archiveData.forEach(item => (item.subjects || []).forEach(s => allSubjects.add(s)));
       
       vocabContainer.innerHTML = Array.from(allSubjects).sort().map(subject => `
-        <button onclick="filterBySubject('${subject}')" class="px-2.5 py-1 bg-zinc-950 hover:bg-amber-950/60 text-zinc-300 hover:text-amber-300 border border-zinc-800 hover:border-amber-500/50 rounded-full font-mono text-[11px] transition">
+        <button onclick="filterBySubject('${subject.replace(/'/g, "\\'")}')" class="px-2.5 py-1 bg-zinc-950 hover:bg-amber-950/60 text-zinc-300 hover:text-amber-300 border border-zinc-800 hover:border-amber-500/50 rounded-full font-mono text-[11px] transition">
           #${subject}
         </button>
       `).join('');
@@ -359,7 +301,7 @@
         const hasAudio = item.audioUrl && item.audioUrl.trim() !== "";
         const partyTags = (item.assignedTo || []).map(p => {
           if (p === 'Gale') return `<span class="px-2 py-0.5 bg-blue-950/80 text-blue-300 border border-blue-500/40 rounded text-[10px]">🔮 Gale</span>`;
-          if (p === 'Laezel') return `<span class="px-2 py-0.5 bg-red-950/80 text-red-300 border border-red-500/40 rounded text-[10px]">🗡️ Lae'zel</span>`;
+          if (p === 'Laezel' || p === "Lae'zel") return `<span class="px-2 py-0.5 bg-red-950/80 text-red-300 border border-red-500/40 rounded text-[10px]">🗡️ Lae'zel</span>`;
           if (p === 'Shadowheart') return `<span class="px-2 py-0.5 bg-slate-900 text-slate-300 border border-slate-500/40 rounded text-[10px]">🌙 Shadowheart</span>`;
           if (p === 'Astarion') return `<span class="px-2 py-0.5 bg-rose-950/80 text-rose-300 border border-rose-500/40 rounded text-[10px]">🩸 Astarion</span>`;
           if (p === 'Wyll') return `<span class="px-2 py-0.5 bg-yellow-950/80 text-yellow-300 border border-yellow-500/40 rounded text-[10px]">⚔️ Wyll</span>`;
@@ -377,7 +319,7 @@
                 <span class="px-2 py-0.5 text-[10px] font-mono bg-purple-950/80 text-purple-300 border border-purple-500/30 rounded ml-2">
                   📦 ${item.container || 'Archive'}
                 </span>
-                <span class="text-xs text-zinc-400 ml-2 font-mono">📍 ${item.subLocation} [${item.coords}]</span>
+                <span class="text-xs text-zinc-400 ml-2 font-mono">${item.subLocation}</span>
               </div>
               <span class="px-2.5 py-0.5 text-[11px] font-mono bg-zinc-800 text-zinc-300 rounded-full border border-zinc-700">
                 ${item.format}
@@ -394,7 +336,7 @@
 
                 ${item.archivistNote ? `
                   <div class="p-3 bg-purple-950/20 border border-purple-500/30 rounded text-xs text-purple-200 leading-relaxed font-mono">
-                    <span class="text-purple-400 font-bold">🎙️ Head Archivist Note:</span> ${item.archivistNote}
+                    <span class="text-purple-400 font-bold">🎙️ Archival Rationale:</span> ${item.archivistNote}
                   </div>
                 ` : ''}
 
@@ -402,10 +344,10 @@
                   <div class="p-3 bg-amber-950/30 border border-amber-500/40 rounded-lg space-y-2">
                     <div class="flex items-center justify-between text-xs font-mono text-amber-400 font-semibold">
                       <span>🔊 Audio Recording (${item.duration || 'Stream'})</span>
-                      <span class="text-[10px] text-zinc-400">🎙️ ${item.narrator || 'SCL Archival Voice'}</span>
+                      <span class="text-[10px] text-zinc-400">🎙️ ${item.narrator || 'Chelsea Jones'}</span>
                     </div>
                     <audio controls class="w-full h-8">
-                      <source src="${item.audioUrl}" type="audio/mp4">
+                      <source src="${item.audioUrl}">
                       Your browser does not support audio playback.
                     </audio>
                   </div>
@@ -423,9 +365,6 @@
 
               <div class="space-y-2 font-mono text-xs text-zinc-400 bg-zinc-950/50 p-3 rounded border border-zinc-800/80">
                 <div>
-                  <span class="text-amber-400 font-semibold uppercase">Quest:</span> ${item.quest}
-                </div>
-                <div>
                   <span class="text-amber-400 font-semibold uppercase">Assigned Companion:</span>
                   <div class="flex flex-wrap gap-1 mt-1">${partyTags || '<span class="text-zinc-600">General Reading</span>'}</div>
                 </div>
@@ -433,7 +372,7 @@
                   <span class="text-amber-400 font-semibold uppercase">Controlled Subjects:</span>
                   <div class="flex flex-wrap gap-1 mt-1">
                     ${item.subjects.map(s => `
-                      <button onclick="filterBySubject('${s}')" class="px-2 py-0.5 bg-zinc-800 hover:bg-amber-950/80 text-zinc-300 hover:text-amber-300 rounded border border-zinc-700 transition">
+                      <button onclick="filterBySubject('${s.replace(/'/g, "\\'")}')" class="px-2 py-0.5 bg-zinc-800 hover:bg-amber-950/80 text-zinc-300 hover:text-amber-300 rounded border border-zinc-700 transition">
                         #${s}
                       </button>
                     `).join('')}
@@ -456,7 +395,7 @@
     function openModal(index) {
       const item = filteredData[index];
       document.getElementById('modalTitle').innerText = item.title;
-      document.getElementById('modalRef').innerText = `${item.id} | ${item.subLocation} [${item.coords}]`;
+      document.getElementById('modalRef').innerText = `${item.id} | ${item.subLocation}`;
 
       const modalBody = document.getElementById('modalBody');
       const transcriptContent = item.text && item.text.trim() !== "" 
@@ -572,8 +511,7 @@
       renderCards();
     }
 
-    renderControlledVocabularyBar();
-    renderCards();
+    initArchive();
   </script>
 </body>
 </html>
