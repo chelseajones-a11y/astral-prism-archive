@@ -170,87 +170,21 @@
 
   <script>
     const RAW_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRvHgsh0UiBphbrCs3gOzkpAWxDREwOYG_sR7Kii-7NSq9_VpRjhUDlGNhTyuP3gQ/pub?output=csv";
-    
-    // Proxy URL to prevent CORS blocking on GitHub Pages
-    const PROXY_URL = "https://api.allorigins.win/raw?url=" + encodeURIComponent(RAW_CSV_URL);
 
     let archiveData = [];
     let filteredData = [];
 
-  function initArchive() {
-      fetch('./data.json')
-        .then(response => {
-          if (!response.ok) throw new Error("Network response was not ok");
-          return response.json();
-        })
-        .then(data => {
-          archiveData = data.map(row => {
-            const getVal = (...keys) => {
-              for (let k of keys) {
-                if (row[k] !== undefined && row[k] !== null) return String(row[k]).trim();
-              }
-              return "";
-            };
-
-            const itemId = getVal("Item_ID", "ItemID", "Item ID", "ID");
-            const title = getVal("Item_Name", "ItemName", "Title") || "Untitled Record";
-            const format = getVal("Doc_Type", "Format") || "Manuscripts";
-            const summary = getVal("Doc_Description", "Narrative_Summary", "Description") || "";
-            const text = getVal("Text", "Full_Doc_Path", "Transcript") || "";
-            const coords = getVal("Location_Coordinates", "X/Y_Coordinates", "Coordinates") || "Faerûn";
-            const rationale = getVal("Archival_Rationale", "Rationale") || "";
-            const duration = getVal("Duration") || "";
-            const narrator = getVal("Voice_Artist", "Voice Artist") || "Chelsea Jones";
-            const wikiLink = getVal("BG3_Wiki_Link", "Wiki Link") || "";
-
-            const rawSubjects = getVal("Controlled_Vocabulary", "Subject_Headings") || "";
-            const subjects = rawSubjects.split(/;|,/).map(s => s.trim()).filter(Boolean);
-
-            const container = itemId.includes("SCL-BB") ? "Book Bag" : (itemId.includes("SCL-BOH") ? "Bag of Holding" : "Book Bag");
-
-            const audioPath = getVal("Audio_Path", "AudioPath") || "";
-            let audioUrl = "";
-            if (audioPath && !audioPath.startsWith("http")) {
-              audioUrl = `https://github.com/chelseajones-a11y/astral-prism-archive/raw/refs/heads/main/${audioPath}`;
-            } else {
-              audioUrl = audioPath;
-            }
-
-            return {
-              id: itemId,
-              title: title,
-              container: container,
-              subLocation: coords,
-              format: format,
-              summary: summary,
-              subjects: subjects,
-              assignedTo: ["Paige"],
-              archivistNote: rationale,
-              text: text,
-              audioUrl: audioUrl,
-              duration: duration,
-              narrator: narrator,
-              wikiLink: wikiLink
-            };
-          }).filter(item => item.id !== "");
-
-          filteredData = [...archiveData];
-          renderControlledVocabularyBar();
-          renderCards();
-        })
-        .catch(err => {
-          console.error("Data Load Error:", err);
-          showError("Failed to load local data.json file.");
-        });
-    }
-
+    function initArchive() {
+      Papa.parse(RAW_CSV_URL, {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
           archiveData = results.data.map(row => {
-            // Flexible Key Matcher to avoid casing/underscore drops
             const getVal = (...keys) => {
               for (let k of keys) {
                 if (row[k] !== undefined && row[k] !== null) return row[k].trim();
               }
-              // Secondary search ignoring underscores and spaces
               const rowKeys = Object.keys(row);
               for (let k of keys) {
                 const target = k.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -343,26 +277,153 @@
         return;
       }
 
-      container.innerHTML = filteredData.map((item, index) => {
-        constThe `/pubhtml` URL is the HTML web preview link rather than the raw CSV stream link! 
+      container.innerHTML = filteredData.map(item => `
+        <article class="bg-zinc-900 border border-zinc-800 hover:border-amber-500/40 rounded-xl p-5 transition space-y-4 shadow-lg">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-zinc-800/80 pb-3">
+            <div>
+              <span class="text-xs font-mono text-amber-400 font-bold px-2 py-0.5 bg-amber-950/50 border border-amber-500/30 rounded">
+                ${item.id}
+              </span>
+              <h2 class="cinzel text-xl font-bold text-zinc-100 mt-2">${item.title}</h2>
+            </div>
+            <div class="text-right text-xs font-mono text-zinc-400 space-y-1">
+              <div>📍 <span class="text-zinc-300">${item.subLocation}</span></div>
+              <div>📦 <span class="text-zinc-300">${item.container}</span></div>
+            </div>
+          </div>
 
-When `PapaParse` tries to parse an HTML page instead of raw CSV text, it gets back full web page markup (`<!DOCTYPE html>...`) instead of spreadsheet rows, which causes the JSON mapping to fail silently.
+          <p class="text-sm text-zinc-300 leading-relaxed">${item.summary}</p>
 
-### The Fix
+          ${item.subjects.length ? `
+            <div class="flex flex-wrap gap-1.5 pt-1">
+              ${item.subjects.map(s => `<span class="px-2 py-0.5 bg-zinc-950 text-amber-300/90 border border-zinc-800 rounded font-mono text-[10px]">#${s}</span>`).join('')}
+            </div>
+          ` : ''}
 
-Change the end of your Google Sheets published URL from `pubhtml` to `pub?output=csv`:
+          <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-zinc-800/60 text-xs">
+            <div class="flex items-center gap-3">
+              ${item.text ? `
+                <button onclick="openModal('${item.id}')" class="px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded font-mono transition">
+                  📖 Read Transcript
+                </button>
+              ` : ''}
+              ${item.wikiLink ? `
+                <a href="${item.wikiLink}" target="_blank" class="text-zinc-400 hover:text-amber-400 font-mono underline">
+                  🔗 BG3 Wiki
+                </a>
+              ` : ''}
+            </div>
+            ${item.audioUrl ? `
+              <audio controls class="h-8 max-w-[220px]">
+                <source src="${item.audioUrl}" type="audio/mpeg">
+              </audio>
+            ` : '<span class="text-zinc-500 font-mono text-[11px]">⏳ Audio Pending</span>'}
+          </div>
+        </article>
+      `).join('');
+    }
 
-* **Preview URL (HTML):** `https://docs.google.com/spreadsheets/d/e/2PACX-1vRvHgsh0UiBphbrCs3gOzkpAWxDREwOYG_sR7Kii-7NSq9_VpRjhUDlGNhTyuP3gQ/pub?output=csv`
-* **Raw CSV Data URL:** `https://docs.google.com/spreadsheets/d/e/2PACX-1vRvHgsh0UiBphbrCs3gOzkpAWxDREwOYG_sR7Kii-7NSq9_VpRjhUDlGNhTyuP3gQ/pub?output=csv`
+    function executeSearch() {
+      applyFilters();
+    }
 
----
+    function toggleBooleanGuide() {
+      const panel = document.getElementById('booleanGuidePanel');
+      panel.classList.toggle('hidden');
+    }
 
-### Step 1: Update `index.html` on GitHub
+    function applySampleQuery(q) {
+      document.getElementById('searchInput').value = q;
+      executeSearch();
+    }
 
-1. Open **[`index.html` on GitHub](https://github.com/chelseajones-a11y/astral-prism-archive/edit/main/index.html)**.
-2. Locate the line near the top of your `<script>` tag defining `TARGET_CSV`.
-3. Set it to:
+    function filterBySubject(subj) {
+      document.getElementById('searchInput').value = subj;
+      executeSearch();
+    }
 
-```javascript
-const TARGET_CSV = "[https://docs.google.com/spreadsheets/d/e/2PACX-1vRvHgsh0UiBphbrCs3gOzkpAWxDREwOYG_sR7Kii-7NSq9_VpRjhUDlGNhTyuP3gQ/pub?output=csv](https://docs.google.com/spreadsheets/d/e/2PACX-1vRvHgsh0UiBphbrCs3gOzkpAWxDREwOYG_sR7Kii-7NSq9_VpRjhUDlGNhTyuP3gQ/pub?output=csv)";
-const PROXY_CSV = "[https://api.allorigins.win/raw?url=](https://api.allorigins.win/raw?url=)" + encodeURIComponent(TARGET_CSV);
+    function resetAllFilters() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('containerSelect').value = 'all';
+      document.getElementById('audioSelect').value = 'all';
+      document.getElementById('sortSelect').value = 'id';
+      applyFilters();
+    }
+
+    function applyFilters() {
+      const query = document.getElementById('searchInput').value.trim().toLowerCase();
+      const containerFilter = document.getElementById('containerSelect').value;
+      const audioFilter = document.getElementById('audioSelect').value;
+      const sortFilter = document.getElementById('sortSelect').value;
+
+      filteredData = archiveData.filter(item => {
+        // Container Filter
+        if (containerFilter !== 'all' && item.container !== containerFilter) return false;
+
+        // Audio Filter
+        if (audioFilter === 'hasAudio' && !item.audioUrl) return false;
+        if (audioFilter === 'pendingAudio' && item.audioUrl) return false;
+
+        // Search Query (Basic Boolean handling)
+        if (query) {
+          const searchable = `${item.id} ${item.title} ${item.summary} ${item.subjects.join(' ')} ${item.text}`.toLowerCase();
+          
+          if (query.includes(' and ')) {
+            const terms = query.split(' and ').map(t => t.trim());
+            return terms.every(t => searchable.includes(t));
+          } else if (query.includes(' or ')) {
+            const terms = query.split(' or ').map(t => t.trim());
+            return terms.some(t => searchable.includes(t));
+          } else if (query.startsWith('not ')) {
+            const term = query.replace('not ', '').trim();
+            return !searchable.includes(term);
+          } else {
+            return searchable.includes(query);
+          }
+        }
+
+        return true;
+      });
+
+      // Sorting
+      if (sortFilter === 'titleAZ') {
+        filteredData.sort((a, b) => a.title.localeCompare(b.title));
+      } else if (sortFilter === 'titleZA') {
+        filteredData.sort((a, b) => b.title.localeCompare(a.title));
+      } else {
+        filteredData.sort((a, b) => a.id.localeCompare(b.id));
+      }
+
+      renderCards();
+    }
+
+    function openModal(id) {
+      const item = archiveData.find(i => i.id === id);
+      if (!item) return;
+
+      document.getElementById('modalTitle').innerText = item.title;
+      document.getElementById('modalRef').innerText = `${item.id} • ${item.subLocation}`;
+      document.getElementById('modalBody').innerHTML = `
+        <div class="space-y-4 text-zinc-300 text-sm leading-relaxed">
+          ${item.archivistNote ? `
+            <div class="p-3 bg-zinc-950 border border-amber-500/20 rounded text-xs text-amber-200/90 font-mono">
+              <strong>Archivist Note:</strong> ${item.archivistNote}
+            </div>
+          ` : ''}
+          <div class="whitespace-pre-wrap font-serif bg-zinc-950 p-4 border border-zinc-800 rounded">
+            ${item.text || 'No transcript text available.'}
+          </div>
+        </div>
+      `;
+      document.getElementById('textModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('textModal').classList.add('hidden');
+    }
+
+    // Auto-run when DOM is loaded
+    document.addEventListener('DOMContentLoaded', initArchive);
+  </script>
+</body>
+</html>
