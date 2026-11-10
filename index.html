@@ -21,14 +21,8 @@
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      background-color: #09090b;
-      color: #f4f4f5;
-    }
-    .cinzel {
-      font-family: 'Cinzel', serif;
-    }
+    body { font-family: 'Inter', sans-serif; background-color: #09090b; color: #f4f4f5; }
+    .cinzel { font-family: 'Cinzel', serif; }
   </style>
 </head>
 <body class="min-h-screen pb-16">
@@ -43,7 +37,7 @@
         Faerûn Audio Transcripts, Books, Recipes, Journals, Tomes & Field Records
       </p>
       
-      <!-- Act Progress Tracking Badges -->
+      <!-- Act Progress Badges -->
       <div class="flex flex-wrap items-center justify-center gap-3 text-xs font-mono">
         <span class="px-3 py-1 bg-emerald-950/80 text-emerald-400 border border-emerald-500/40 rounded-full font-semibold">
           ✓ Act I: Completed
@@ -60,40 +54,144 @@
 
   <main class="max-w-6xl mx-auto px-4 mt-8 space-y-6">
 
-    <!-- Advanced Library Search Engine -->
-    <section class="bg-zinc-900/90 border border-amber-500/30 rounded-xl p-5 shadow-2xl space-y-4">
+    <!-- ARCHIVAL INFORMATION RETRIEVAL SUITE -->
+    <section class="bg-zinc-900/90 border border-amber-500/30 rounded-xl p-5 shadow-2xl space-y-5">
+      
+      <!-- Main Search Input Bar -->
       <div class="flex flex-col sm:flex-row gap-3">
         <div class="relative flex-1">
           <input type="text" id="searchInput" onkeyup="executeSearch()" 
-            placeholder="Library Search (e.g. Hag AND Bargain, Necromancy OR Ritual, NOT Cult)..." 
+            placeholder="Search titles, transcripts, controlled subjects (e.g. Hag AND Bargain)..." 
             class="w-full bg-zinc-950 border border-zinc-700 text-zinc-100 placeholder-zinc-500 px-4 py-3 rounded-lg focus:outline-none focus:border-amber-400 font-mono text-sm">
         </div>
         <button onclick="executeSearch()" class="px-6 py-3 bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold rounded-lg text-sm transition-colors cinzel">
-          Search Archive
+          Execute Search
+        </button>
+        <button onclick="toggleBooleanGuide()" class="px-4 py-3 bg-zinc-800 hover:bg-zinc-700 text-amber-400 font-mono text-xs rounded-lg border border-zinc-700 transition">
+          ℹ️ Boolean Syntax Guide
         </button>
       </div>
 
-      <!-- Region Filter Buttons -->
-      <div class="flex flex-wrap items-center gap-2 justify-center sm:justify-start pt-2">
-        <button onclick="filterRegion('all')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/20 border border-amber-500/50 text-amber-300 hover:bg-amber-500/30 transition">
-          ALL RECORDS
-        </button>
-        <button onclick="filterRegion('Wilderness')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-950 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-900/50 transition">
-          🌲 WILDERNESS
-        </button>
-        <button onclick="filterRegion('Underdark')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-purple-950 border border-purple-500/40 text-purple-300 hover:bg-purple-900/50 transition">
-          🍄 UNDERDARK
-        </button>
-        <button onclick="filterRegion('Grymforge')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-orange-950 border border-orange-500/40 text-orange-300 hover:bg-orange-900/50 transition">
-          🔥 GRYMFORGE
-        </button>
-        <button onclick="filterRegion('Rosymorn Monastery')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-yellow-950 border border-yellow-500/40 text-yellow-300 hover:bg-yellow-900/50 transition">
-          ☀️ ROSYMORN MONASTERY
-        </button>
+      <!-- Collapsible Boolean Search Syntax Helper Panel -->
+      <div id="booleanGuidePanel" class="hidden p-4 bg-zinc-950 border border-amber-500/30 rounded-lg space-y-3 font-mono text-xs text-zinc-300">
+        <div class="flex items-center justify-between border-b border-zinc-800 pb-2">
+          <span class="text-amber-400 font-bold uppercase tracking-wider">📜 Archival Boolean Retrieval Operator Guide</span>
+          <span class="text-zinc-500 text-[10px]">Case-Insensitive Evaluator</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div class="p-2.5 bg-zinc-900 border border-zinc-800 rounded">
+            <span class="text-emerald-400 font-bold">TERM_A AND TERM_B</span>
+            <p class="text-zinc-400 text-[11px] mt-1">Returns records matching <em>both</em> terms across metadata and Column J text.</p>
+            <button onclick="applySampleQuery('Hag AND Bargain')" class="mt-2 text-[10px] text-amber-300 bg-amber-950/60 border border-amber-500/40 px-2 py-0.5 rounded hover:bg-amber-900/80">Try: Hag AND Bargain</button>
+          </div>
+          <div class="p-2.5 bg-zinc-900 border border-zinc-800 rounded">
+            <span class="text-purple-400 font-bold">TERM_A OR TERM_B</span>
+            <p class="text-zinc-400 text-[11px] mt-1">Returns records containing <em>either</em> term in any indexed field.</p>
+            <button onclick="applySampleQuery('Necromancy OR Ritual')" class="mt-2 text-[10px] text-amber-300 bg-amber-950/60 border border-amber-500/40 px-2 py-0.5 rounded hover:bg-amber-900/80">Try: Necromancy OR Ritual</button>
+          </div>
+          <div class="p-2.5 bg-zinc-900 border border-zinc-800 rounded">
+            <span class="text-orange-400 font-bold">NOT TERM</span>
+            <p class="text-zinc-400 text-[11px] mt-1">Excludes any records containing the specified query term.</p>
+            <button onclick="applySampleQuery('NOT Cult')" class="mt-2 text-[10px] text-amber-300 bg-amber-950/60 border border-amber-500/40 px-2 py-0.5 rounded hover:bg-amber-900/80">Try: NOT Cult</button>
+          </div>
+        </div>
       </div>
+
+      <!-- PARTY MEMBER READING LIST SELECTOR BAR -->
+      <div class="pt-2 border-t border-zinc-800/80">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[10px] font-mono uppercase tracking-wider text-amber-400 font-bold">📚 Party Companion Reading Lists (Curated by Paige Turner)</span>
+        </div>
+        <div class="flex flex-wrap items-center gap-2 font-mono text-xs">
+          <button onclick="filterPartyMember('all')" id="btn-party-all" class="px-3 py-1.5 rounded-lg font-semibold bg-amber-500/20 border border-amber-500/50 text-amber-300 hover:bg-amber-500/30 transition">
+            👥 All Party Reading
+          </button>
+          <button onclick="filterPartyMember('Gale')" id="btn-party-gale" class="px-3 py-1.5 rounded-lg bg-zinc-950 hover:bg-blue-950/60 text-blue-300 border border-zinc-800 hover:border-blue-500/40 transition flex items-center gap-1.5">
+            🔮 Gale
+          </button>
+          <button onclick="filterPartyMember('Laezel')" id="btn-party-laezel" class="px-3 py-1.5 rounded-lg bg-zinc-950 hover:bg-red-950/60 text-red-300 border border-zinc-800 hover:border-red-500/40 transition flex items-center gap-1.5">
+            🗡️ Lae'zel
+          </button>
+          <button onclick="filterPartyMember('Shadowheart')" id="btn-party-shadowheart" class="px-3 py-1.5 rounded-lg bg-zinc-950 hover:bg-slate-900 text-slate-300 border border-zinc-800 hover:border-slate-500/40 transition flex items-center gap-1.5">
+            🌙 Shadowheart
+          </button>
+          <button onclick="filterPartyMember('Astarion')" id="btn-party-astarion" class="px-3 py-1.5 rounded-lg bg-zinc-950 hover:bg-rose-950/60 text-rose-300 border border-zinc-800 hover:border-rose-500/40 transition flex items-center gap-1.5">
+            🩸 Astarion
+          </button>
+          <button onclick="filterPartyMember('Wyll')" id="btn-party-wyll" class="px-3 py-1.5 rounded-lg bg-zinc-950 hover:bg-yellow-950/60 text-yellow-300 border border-zinc-800 hover:border-yellow-500/40 transition flex items-center gap-1.5">
+            ⚔️ Wyll
+          </button>
+          <button onclick="filterPartyMember('Karlach')" id="btn-party-karlach" class="px-3 py-1.5 rounded-lg bg-zinc-950 hover:bg-orange-950/60 text-orange-300 border border-zinc-800 hover:border-orange-500/40 transition flex items-center gap-1.5">
+            🔥 Karlach
+          </button>
+          <button onclick="filterPartyMember('Paige')" id="btn-party-paige" class="px-3 py-1.5 rounded-lg bg-zinc-950 hover:bg-purple-950/60 text-purple-300 border border-zinc-800 hover:border-purple-500/40 transition flex items-center gap-1.5">
+            🧙‍♀️ Paige (Archivist Picks)
+          </button>
+        </div>
+      </div>
+
+      <!-- Multi-Facet Filters & Sorting Controls -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2 border-t border-zinc-800/80 font-mono text-xs">
+        
+        <!-- Region Facet -->
+        <div>
+          <label class="block text-zinc-400 text-[10px] uppercase tracking-wider mb-1">📍 Map Region</label>
+          <select id="regionSelect" onchange="applyFilters()" class="w-full bg-zinc-950 border border-zinc-700 text-zinc-200 px-3 py-2 rounded focus:outline-none focus:border-amber-400">
+            <option value="all">All Regions</option>
+            <option value="Wilderness">🌲 Wilderness</option>
+            <option value="Underdark">🍄 Underdark</option>
+            <option value="Grymforge">🔥 Grymforge</option>
+            <option value="Rosymorn Monastery">☀️ Rosymorn Monastery</option>
+          </select>
+        </div>
+
+        <!-- Container Facet -->
+        <div>
+          <label class="block text-zinc-400 text-[10px] uppercase tracking-wider mb-1">📦 Storage Container</label>
+          <select id="containerSelect" onchange="applyFilters()" class="w-full bg-zinc-950 border border-zinc-700 text-zinc-200 px-3 py-2 rounded focus:outline-none focus:border-amber-400">
+            <option value="all">All Storage Containers</option>
+            <option value="Book Bag">🎒 Book Bag (BB)</option>
+            <option value="Bag of Holding">🧳 Bag of Holding (BOH)</option>
+          </select>
+        </div>
+
+        <!-- Audio Stream Filter -->
+        <div>
+          <label class="block text-zinc-400 text-[10px] uppercase tracking-wider mb-1">🔊 Audio Stream Status</label>
+          <select id="audioSelect" onchange="applyFilters()" class="w-full bg-zinc-950 border border-zinc-700 text-zinc-200 px-3 py-2 rounded focus:outline-none focus:border-amber-400">
+            <option value="all">All Media Statuses</option>
+            <option value="hasAudio">🔊 Audio Streaming Available</option>
+            <option value="pendingAudio">⏳ Archival Recording Pending</option>
+          </select>
+        </div>
+
+        <!-- Multi-Criteria Sort -->
+        <div>
+          <label class="block text-zinc-400 text-[10px] uppercase tracking-wider mb-1">🔤 Sort Order</label>
+          <select id="sortSelect" onchange="applyFilters()" class="w-full bg-zinc-950 border border-zinc-700 text-amber-400 font-semibold px-3 py-2 rounded focus:outline-none focus:border-amber-400">
+            <option value="id">Archive ID (Default)</option>
+            <option value="titleAZ">Title (A – Z)</option>
+            <option value="titleZA">Title (Z – A)</option>
+            <option value="location">Region / Location</option>
+          </select>
+        </div>
+
+      </div>
+
+      <!-- Controlled Vocabulary Hashtag Bar -->
+      <div class="pt-2 border-t border-zinc-800/60">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[10px] font-mono uppercase tracking-wider text-amber-400 font-bold">🏷️ Controlled Vocabulary Index (Click to Filter Subject)</span>
+          <button onclick="resetAllFilters()" class="text-[10px] font-mono text-zinc-500 hover:text-amber-400 underline">Reset All Filters</button>
+        </div>
+        <div id="controlledVocabBar" class="flex flex-wrap gap-1.5">
+          <!-- Injected dynamically from data -->
+        </div>
+      </div>
+
     </section>
 
-    <!-- Archive Records Card Feed -->
+    <!-- Archive Records Grid Feed -->
     <section id="recordsContainer" class="grid grid-cols-1 gap-6">
       <!-- Dynamic JS Content Injected Here -->
     </section>
@@ -119,11 +217,11 @@
   </div>
 
   <script>
-    // Master Archive Dataset with Column J Text Transcripts
     const archiveData = [
       {
-        id: "ACT1-WILD-01",
+        id: "SCL-BB-04-01",
         title: "A Brush with Evil: On Hags",
+        container: "Book Bag",
         location: "Wilderness",
         subLocation: "Blighted Village (Cellar / Hag Lair)",
         coords: "X: 38, Y: 378",
@@ -131,16 +229,21 @@
         format: "Manuscripts",
         summary: "Operational field guide and folklore study profiling hag biology, illusions, and bargain-making behavior. Warns adventurers against trusting teahouse illusions and accepting deceptive deals.",
         subjects: ["Hags", "Auntie Ethel", "Fey Creatures", "Deceptive Magic", "Putrid Bog"],
+        assignedTo: ["Paige", "Wyll"],
+        archivistNote: "Mandatory reading for Wyll before confronting Auntie Ethel in the Sunlit Wetlands to prevent rash bargain deals.",
         text: `Hags are creatures of ancient power and pure malice. They prey upon the innocent, corrupting desire into despair through their dark bargains.
 
 Beware their cravens and covens alike: a single hag is a terrifying opponent, but a coven of three wields magic capable of rending entire lands apart.
 
 Should you encounter one, remember this—never strike a deal, for a hag's mercy is far worse than her cruelty.`,
-        audioUrl: "https://github.com/chelseajones-a11y/astral-prism-archive/raw/refs/heads/main/SCL-BB-04-01_Audio_ABrushWithEvilOnHags.mp3.m4a"
+        audioUrl: "https://github.com/chelseajones-a11y/astral-prism-archive/raw/refs/heads/main/SCL-BB-04-01_Audio_ABrushWithEvilOnHags.mp3.m4a",
+        duration: "3:06",
+        narrator: "Paige Turner, MLIS"
       },
       {
-        id: "ACT1-WILD-02",
+        id: "SCL-BB-04-02",
         title: "A is For Azuth and Other Gods II",
+        container: "Book Bag",
         location: "Wilderness",
         subLocation: "Blighted Village (Schoolhouse)",
         coords: "X: 18, Y: 432",
@@ -148,14 +251,19 @@ Should you encounter one, remember this—never strike a deal, for a hag's mercy
         format: "Manuscripts",
         summary: "Introductory theological survey documenting divine domains, clerical duties, and pantheon classifications across the Sword Coast. Designed for novice scholars and acolytes.",
         subjects: ["Theology", "Azuth", "Faerûnian Pantheon", "Divine Domains", "Primer Series"],
+        assignedTo: ["Gale", "Shadowheart"],
+        archivistNote: "Gale requested this volume to cross-reference Mystra's divine domain hierarchy against ancient Netherese arcane rites.",
         text: `Azuth, God of Wizards and Arcane Knowledge, holds that magic must be preserved, studied, and taught responsibly.
 
 This volume introduces primary deities of the Sword Coast, outlining sacred tenets, clerical domains, and divine portfolios.`,
-        audioUrl: ""
+        audioUrl: "",
+        duration: "Coming Soon",
+        narrator: "Archival Recording Pending"
       },
       {
-        id: "ACT1-WILD-03",
+        id: "SCL-BB-04-06",
         title: "A Pleasurable Deal",
+        container: "Book Bag",
         location: "Wilderness",
         subLocation: "The Risen Road (Tollhouse)",
         coords: "X: 105, Y: 560",
@@ -163,14 +271,19 @@ This volume introduces primary deities of the Sword Coast, outlining sacred tene
         format: "Manuscripts",
         summary: "Contractual record and narrative warning concerning devil pacts, bargain terms, and infernal soul transactions along the Sword Coast.",
         subjects: ["Infernal Pacts", "Devils", "Soul Contracts", "Fiends", "Risen Road"],
+        assignedTo: ["Wyll", "Karlach", "Astarion"],
+        archivistNote: "Assigned to Wyll & Karlach for joint review to analyze Mizora's infernal contract clauses and archdevil pact fine print.",
         text: `A pact signed in blood can never be undone by mortal tears. The archdevil Raphael and his kin offer earthly desire in exchange for immortal servitude.
 
 Inspect every clause, for infernal legalese conceals traps deeper than the Nine Hells.`,
-        audioUrl: ""
+        audioUrl: "",
+        duration: "Coming Soon",
+        narrator: "Archival Recording Pending"
       },
       {
-        id: "ACT1-UD-01",
+        id: "SCL-BOH-01-01",
         title: "Book of Dead Gods",
+        container: "Bag of Holding",
         location: "Underdark",
         subLocation: "Dank Crypt (Jergal Shrine)",
         coords: "X: -290, Y: -300",
@@ -178,14 +291,19 @@ Inspect every clause, for infernal legalese conceals traps deeper than the Nine 
         format: "Manuscripts",
         summary: "High-mortality theological chronicle cataloging extinct deities, divine fall cycles, and forbidden planar mortality lore discovered deep within Jergal's ancient temple.",
         subjects: ["Jergal", "Dead Gods", "Eschatology", "Fallen Deities", "Banned Literature"],
+        assignedTo: ["Paige", "Gale", "Shadowheart"],
+        archivistNote: "Paige & Shadowheart inspected this codex upon discovering Withers inside the sarcophagus to verify Jergal's ledger history.",
         text: `Names written in faded blood: gods of forgotten ages who faded when mortals ceased to pray.
 
 Jergal records them all, holding the ledger until the end of time itself.`,
-        audioUrl: ""
+        audioUrl: "",
+        duration: "Coming Soon",
+        narrator: "Archival Recording Pending"
       },
       {
-        id: "ACT1-ROSY-01",
+        id: "SCL-BOH-01-08",
         title: "Account of the Establishment of Creche Yllek",
+        container: "Bag of Holding",
         location: "Rosymorn Monastery",
         subLocation: "Rosymorn Monastery (Crèche Y'llek)",
         coords: "X: 72, Y: 140",
@@ -193,22 +311,39 @@ Jergal records them all, holding the ledger until the end of time itself.`,
         format: "Manuscripts",
         summary: "Military log detailing the Githyanki conquest of Lathanderian sacred grounds, highlighting the strategic repurposing of Rosymorn Abbey into a martial hatching crèche under Queen Vlaakith's mandate.",
         subjects: ["Githyanki", "Crèche Yllek", "Rosymorn Monastery", "Vlaakith", "Conquest Logs"],
+        assignedTo: ["Laezel", "Paige"],
+        archivistNote: "Lae'zel's priority field briefing document before approaching Inquisitor W'wargaz at Rosymorn Monastery.",
         text: `By order of Queen Vlaakith, the Lathanderian retreat of Rosymorn Monastery has been cleansed.
 
 It now serves as Crèche Y'llek, a fortress for breeding warriors untainted by soft surface philosophies.`,
-        audioUrl: ""
+        audioUrl: "",
+        duration: "Coming Soon",
+        narrator: "Archival Recording Pending"
       }
     ];
 
     let currentRawData = [...archiveData];
     let filteredData = [...archiveData];
+    let activePartyFilter = 'all';
+
+    function renderControlledVocabularyBar() {
+      const vocabContainer = document.getElementById('controlledVocabBar');
+      const allSubjects = new Set();
+      archiveData.forEach(item => (item.subjects || []).forEach(s => allSubjects.add(s)));
+      
+      vocabContainer.innerHTML = Array.from(allSubjects).sort().map(subject => `
+        <button onclick="filterBySubject('${subject}')" class="px-2.5 py-1 bg-zinc-950 hover:bg-amber-950/60 text-zinc-300 hover:text-amber-300 border border-zinc-800 hover:border-amber-500/50 rounded-full font-mono text-[11px] transition">
+          #${subject}
+        </button>
+      `).join('');
+    }
 
     function renderCards() {
       const container = document.getElementById('recordsContainer');
       if (filteredData.length === 0) {
         container.innerHTML = `
           <div class="p-8 text-center bg-zinc-900 border border-zinc-800 rounded-xl">
-            <p class="text-zinc-400 font-mono text-sm">No archive records match your search filter.</p>
+            <p class="text-zinc-400 font-mono text-sm">No archive records match your search or party reading list filter.</p>
           </div>
         `;
         return;
@@ -216,12 +351,26 @@ It now serves as Crèche Y'llek, a fortress for breeding warriors untainted by s
 
       container.innerHTML = filteredData.map((item, index) => {
         const hasAudio = item.audioUrl && item.audioUrl.trim() !== "";
+        const partyTags = (item.assignedTo || []).map(p => {
+          if (p === 'Gale') return `<span class="px-2 py-0.5 bg-blue-950/80 text-blue-300 border border-blue-500/40 rounded text-[10px]">🔮 Gale</span>`;
+          if (p === 'Laezel') return `<span class="px-2 py-0.5 bg-red-950/80 text-red-300 border border-red-500/40 rounded text-[10px]">🗡️ Lae'zel</span>`;
+          if (p === 'Shadowheart') return `<span class="px-2 py-0.5 bg-slate-900 text-slate-300 border border-slate-500/40 rounded text-[10px]">🌙 Shadowheart</span>`;
+          if (p === 'Astarion') return `<span class="px-2 py-0.5 bg-rose-950/80 text-rose-300 border border-rose-500/40 rounded text-[10px]">🩸 Astarion</span>`;
+          if (p === 'Wyll') return `<span class="px-2 py-0.5 bg-yellow-950/80 text-yellow-300 border border-yellow-500/40 rounded text-[10px]">⚔️ Wyll</span>`;
+          if (p === 'Karlach') return `<span class="px-2 py-0.5 bg-orange-950/80 text-orange-300 border border-orange-500/40 rounded text-[10px]">🔥 Karlach</span>`;
+          if (p === 'Paige') return `<span class="px-2 py-0.5 bg-purple-950/80 text-purple-300 border border-purple-500/40 rounded text-[10px]">🧙‍♀️ Paige</span>`;
+          return '';
+        }).join(' ');
+
         return `
           <article class="bg-zinc-900/90 border border-zinc-800 hover:border-amber-500/40 rounded-xl p-5 shadow-lg space-y-4">
             
             <div class="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-800 pb-3">
               <div>
                 <span class="text-xs font-mono font-bold text-amber-400 uppercase tracking-widest">${item.id}</span>
+                <span class="px-2 py-0.5 text-[10px] font-mono bg-purple-950/80 text-purple-300 border border-purple-500/30 rounded ml-2">
+                  📦 ${item.container || 'Archive'}
+                </span>
                 <span class="text-xs text-zinc-400 ml-2 font-mono">📍 ${item.subLocation} [${item.coords}]</span>
               </div>
               <span class="px-2.5 py-0.5 text-[11px] font-mono bg-zinc-800 text-zinc-300 rounded-full border border-zinc-700">
@@ -234,34 +383,58 @@ It now serves as Crèche Y'llek, a fortress for breeding warriors untainted by s
             <!-- 2-Column Responsive Layout -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               
-              <!-- Left Column: Summary & Audio -->
+              <!-- Left Column: Summary & Audio Block -->
               <div class="space-y-3">
                 <div class="p-3 bg-zinc-950/80 border-l-2 border-amber-500 rounded text-zinc-300 italic text-xs leading-relaxed">
                   ${item.summary}
                 </div>
 
+                ${item.archivistNote ? `
+                  <div class="p-3 bg-purple-950/20 border border-purple-500/30 rounded text-xs text-purple-200 leading-relaxed font-mono">
+                    <span class="text-purple-400 font-bold">🎙️ Head Archivist Note:</span> ${item.archivistNote}
+                  </div>
+                ` : ''}
+
                 ${hasAudio ? `
                   <div class="p-3 bg-amber-950/30 border border-amber-500/40 rounded-lg space-y-2">
-                    <div class="flex items-center gap-2 text-xs font-mono text-amber-400 font-semibold">
-                      <span>🔊 Raw GitHub Audio Stream</span>
+                    <div class="flex items-center justify-between text-xs font-mono text-amber-400 font-semibold">
+                      <span>🔊 Audio Recording (${item.duration || 'Stream'})</span>
+                      <span class="text-[10px] text-zinc-400">🎙️ ${item.narrator || 'SCL Archival Voice'}</span>
                     </div>
                     <audio controls class="w-full h-8">
                       <source src="${item.audioUrl}" type="audio/mp4">
                       Your browser does not support audio playback.
                     </audio>
                   </div>
-                ` : ''}
+                ` : `
+                  <div class="p-3 bg-zinc-950 border border-zinc-800/80 rounded-lg flex items-center justify-between text-xs font-mono text-zinc-500">
+                    <span class="flex items-center gap-1.5">
+                      <span class="text-amber-500">⏳</span> Audio Recording Pending
+                    </span>
+                    <span class="px-2 py-0.5 bg-zinc-900 border border-zinc-800 rounded text-[10px] text-zinc-400">
+                      Coming Soon
+                    </span>
+                  </div>
+                `}
               </div>
 
-              <!-- Right Column: Metadata & Subject Headings -->
+              <!-- Right Column: Metadata & Controlled Subject Headings -->
               <div class="space-y-2 font-mono text-xs text-zinc-400 bg-zinc-950/50 p-3 rounded border border-zinc-800/80">
                 <div>
                   <span class="text-amber-400 font-semibold uppercase">Quest:</span> ${item.quest}
                 </div>
                 <div>
-                  <span class="text-amber-400 font-semibold uppercase">Subjects:</span>
+                  <span class="text-amber-400 font-semibold uppercase">Assigned Companion:</span>
+                  <div class="flex flex-wrap gap-1 mt-1">${partyTags || '<span class="text-zinc-600">General Reading</span>'}</div>
+                </div>
+                <div>
+                  <span class="text-amber-400 font-semibold uppercase">Controlled Subjects:</span>
                   <div class="flex flex-wrap gap-1 mt-1">
-                    ${item.subjects.map(s => `<span class="px-2 py-0.5 bg-zinc-800 text-zinc-300 rounded border border-zinc-700">#${s}</span>`).join('')}
+                    ${item.subjects.map(s => `
+                      <button onclick="filterBySubject('${s}')" class="px-2 py-0.5 bg-zinc-800 hover:bg-amber-950/80 text-zinc-300 hover:text-amber-300 rounded border border-zinc-700 transition">
+                        #${s}
+                      </button>
+                    `).join('')}
                   </div>
                 </div>
               </div>
@@ -298,7 +471,7 @@ It now serves as Crèche Y'llek, a fortress for breeding warriors untainted by s
         <div class="prose prose-invert max-w-none text-zinc-200 leading-relaxed space-y-4">
           <div class="flex items-center justify-between mb-2">
             <h4 class="text-xs uppercase tracking-wider text-zinc-400 font-mono">📜 Text Transcript</h4>
-            <span class="text-xs text-zinc-500 font-mono">Column J Data</span>
+            <span class="text-xs text-zinc-500 font-mono">${item.container || 'Master SCL Index'}</span>
           </div>
           <div class="p-5 bg-zinc-950 border border-zinc-800 rounded-lg max-h-[55vh] overflow-y-auto font-serif text-sm leading-relaxed whitespace-pre-line text-zinc-300">
             ${transcriptContent}
@@ -313,25 +486,74 @@ It now serves as Crèche Y'llek, a fortress for breeding warriors untainted by s
       document.getElementById('textModal').classList.add('hidden');
     }
 
-    function filterRegion(region) {
-      if (region === 'all') {
-        filteredData = [...currentRawData];
-      } else {
-        filteredData = currentRawData.filter(i => i.location === region);
+    function toggleBooleanGuide() {
+      document.getElementById('booleanGuidePanel').classList.toggle('hidden');
+    }
+
+    function applySampleQuery(query) {
+      document.getElementById('searchInput').value = query;
+      executeSearch();
+    }
+
+    function filterBySubject(subject) {
+      document.getElementById('searchInput').value = `#${subject}`;
+      executeSearch();
+    }
+
+    function filterPartyMember(member) {
+      activePartyFilter = member;
+      applyFilters();
+    }
+
+    function applyFilters() {
+      const region = document.getElementById('regionSelect').value;
+      const container = document.getElementById('containerSelect').value;
+      const audioStatus = document.getElementById('audioSelect').value;
+      const sortOrder = document.getElementById('sortSelect').value;
+
+      filteredData = archiveData.filter(item => {
+        const matchesRegion = region === 'all' || item.location === region;
+        const matchesContainer = container === 'all' || item.container === container;
+        const matchesAudio = audioStatus === 'all' || 
+          (audioStatus === 'hasAudio' && item.audioUrl && item.audioUrl.trim() !== "") ||
+          (audioStatus === 'pendingAudio' && (!item.audioUrl || item.audioUrl.trim() === ""));
+        const matchesParty = activePartyFilter === 'all' || (item.assignedTo || []).includes(activePartyFilter);
+
+        return matchesRegion && matchesContainer && matchesAudio && matchesParty;
+      });
+
+      // Sorting Logic
+      if (sortOrder === 'titleAZ') {
+        filteredData.sort((a, b) => a.title.localeCompare(b.title));
+      } else if (sortOrder === 'titleZA') {
+        filteredData.sort((a, b) => b.title.localeCompare(a.title));
+      } else if (sortOrder === 'location') {
+        filteredData.sort((a, b) => a.location.localeCompare(b.location));
       }
+
+      renderCards();
+    }
+
+    function resetAllFilters() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('regionSelect').value = 'all';
+      document.getElementById('containerSelect').value = 'all';
+      document.getElementById('audioSelect').value = 'all';
+      document.getElementById('sortSelect').value = 'id';
+      activePartyFilter = 'all';
+      filteredData = [...archiveData];
       renderCards();
     }
 
     function executeSearch() {
       const query = document.getElementById('searchInput').value.trim();
       if (!query) {
-        filteredData = [...currentRawData];
-        renderCards();
+        applyFilters();
         return;
       }
 
-      filteredData = currentRawData.filter(item => {
-        const fullSearchableContent = `${item.title} ${item.summary} ${(item.subjects || []).join(' ')} ${item.subLocation} ${item.text || ''}`.toLowerCase();
+      filteredData = archiveData.filter(item => {
+        const fullSearchableContent = `${item.title} ${item.summary} ${(item.subjects || []).map(s => '#' + s).join(' ')} ${item.subLocation} ${item.container || ''} ${(item.assignedTo || []).join(' ')} ${item.text || ''}`.toLowerCase();
         
         if (query.includes(' AND ')) {
           const terms = query.split(' AND ').map(t => t.trim().toLowerCase());
@@ -351,6 +573,7 @@ It now serves as Crèche Y'llek, a fortress for breeding warriors untainted by s
     }
 
     // Initial Execution
+    renderControlledVocabularyBar();
     renderCards();
   </script>
 </body>
