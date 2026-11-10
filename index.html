@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>✨ ASTRAL PRISM ARCHIVE ✨</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- PapaParse for CSV parsing -->
+  <!-- PapaParse CDN -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script>
     tailwind.config = {
@@ -58,7 +58,7 @@
     <!-- ARCHIVAL RETRIEVAL SUITE -->
     <section class="bg-zinc-900/90 border border-amber-500/30 rounded-xl p-5 shadow-2xl space-y-5">
       
-      <!-- Main Search Input Bar -->
+      <!-- Search Input Bar -->
       <div class="flex flex-col sm:flex-row gap-3">
         <div class="relative flex-1">
           <input type="text" id="searchInput" onkeyup="executeSearch()" 
@@ -98,7 +98,7 @@
         </div>
       </div>
 
-      <!-- PARTY MEMBER READING LIST SELECTOR BAR -->
+      <!-- Party Companion Reading List Bar -->
       <div class="pt-2 border-t border-zinc-800/80">
         <div class="flex items-center justify-between mb-2">
           <span class="text-[10px] font-mono uppercase tracking-wider text-amber-400 font-bold">📚 Party Companion Reading Lists (Curated by Paige Turner)</span>
@@ -131,19 +131,8 @@
         </div>
       </div>
 
-      <!-- Multi-Facet Filters & Sorting Controls -->
+      <!-- Filters & Sort Controls -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2 border-t border-zinc-800/80 font-mono text-xs">
-        <div>
-          <label class="block text-zinc-400 text-[10px] uppercase tracking-wider mb-1">📍 Map Region</label>
-          <select id="regionSelect" onchange="applyFilters()" class="w-full bg-zinc-950 border border-zinc-700 text-zinc-200 px-3 py-2 rounded focus:outline-none focus:border-amber-400">
-            <option value="all">All Regions</option>
-            <option value="Wilderness">🌲 Wilderness</option>
-            <option value="Underdark">🍄 Underdark</option>
-            <option value="Grymforge">🔥 Grymforge</option>
-            <option value="Rosymorn Monastery">☀️ Rosymorn Monastery</option>
-          </select>
-        </div>
-
         <div>
           <label class="block text-zinc-400 text-[10px] uppercase tracking-wider mb-1">📦 Storage Container</label>
           <select id="containerSelect" onchange="applyFilters()" class="w-full bg-zinc-950 border border-zinc-700 text-zinc-200 px-3 py-2 rounded focus:outline-none focus:border-amber-400">
@@ -168,12 +157,11 @@
             <option value="id">Archive ID (Default)</option>
             <option value="titleAZ">Title (A – Z)</option>
             <option value="titleZA">Title (Z – A)</option>
-            <option value="location">Region / Location</option>
           </select>
         </div>
       </div>
 
-      <!-- Controlled Vocabulary Hashtag Bar -->
+      <!-- Controlled Vocabulary Bar -->
       <div class="pt-2 border-t border-zinc-800/60">
         <div class="flex items-center justify-between mb-2">
           <span class="text-[10px] font-mono uppercase tracking-wider text-amber-400 font-bold">🏷️ Controlled Vocabulary Index (Click to Filter Subject)</span>
@@ -186,7 +174,7 @@
 
     </section>
 
-    <!-- Archive Records Grid Feed -->
+    <!-- Records Feed -->
     <section id="recordsContainer" class="grid grid-cols-1 gap-6">
       <div class="p-8 text-center bg-zinc-900 border border-zinc-800 rounded-xl font-mono text-sm text-amber-400 animate-pulse">
         ⏳ Fetching live collection records from Google Sheets...
@@ -213,27 +201,44 @@
     </div>
   </div>
 
-<script>
-    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRvHgsh0UiBphbrCs3gOzkpAWxDREwOYG_sR7Kii-7NSq9_VpRjhUDlGNhTyuP3gQ/pub?output=csv";
+  <script>
+    // Direct Google Sheets CSV URL with API CORS proxy fallback
+    const TARGET_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRvHgsh0UiBphbrCs3gOzkpAWxDREwOYG_sR7Kii-7NSq9_VpRjhUDlGNhTyuP3gQ/pub?output=csv";
+    const PROXY_CSV = "https://api.allorigins.win/raw?url=" + encodeURIComponent(TARGET_CSV);
 
     let archiveData = [];
     let filteredData = [];
     let activePartyFilter = 'all';
 
     function initArchive() {
-      Papa.parse(CSV_URL, {
+      Papa.parse(PROXY_CSV, {
         download: true,
         header: true,
         skipEmptyLines: true,
         complete: function(results) {
+          if (!results.data || results.data.length === 0) {
+            showError("No data rows returned from spreadsheet.");
+            return;
+          }
+
           archiveData = results.data.map(row => {
+            const itemId = row["Item_ID"] || row["Item ID"] || row["ID"] || "";
+            const title = row["Item_Name"] || row["Item Name"] || row["Title"] || "Untitled Record";
+            const format = row["Doc_Type"] || row["Doc Type"] || "Manuscripts";
+            const summary = row["Doc_Description"] || row["Narrative_Summary/Subject_Headings"] || row["Description"] || "";
+            const text = row["Text"] || row["Full_Doc_Path"] || "";
+            const coords = row["X/Y_Coordinates"] || row["Coordinates"] || "Faerûn";
+            const rationale = row["Archival_Rationale"] || row["Rationale"] || "";
+            const duration = row["Duration"] || "";
+            const narrator = row["Voice_Artist"] || row["Voice Artist"] || "Chelsea Jones";
+            const wikiLink = row["BG3_Wiki_Link"] || row["Wiki Link"] || "";
+
             const rawSubjects = row["Controlled_Vocabulary"] || row["Narrative_Summary/Subject_Headings"] || "";
             const subjects = rawSubjects.split(';').map(s => s.trim()).filter(Boolean);
 
-            const itemId = row["Item_ID"] || "";
-            const container = itemId.includes("SCL-BB") ? "Book Bag" : "Bag of Holding";
-            
-            const audioPath = row["Audio_Path"] || "";
+            const container = itemId.includes("SCL-BB") ? "Book Bag" : (itemId.includes("SCL-BOH") ? "Bag of Holding" : "Book Bag");
+
+            const audioPath = row["Audio_Path"] || row["Audio Path"] || "";
             let audioUrl = "";
             if (audioPath && !audioPath.startsWith("http")) {
               audioUrl = `https://github.com/chelseajones-a11y/astral-prism-archive/raw/refs/heads/main/${audioPath}`;
@@ -243,24 +248,21 @@
 
             return {
               id: itemId,
-              title: row["Item_Name"] || "Untitled Record",
+              title: title,
               container: container,
-              location: "Wilderness",
-              subLocation: row["X/Y_Coordinates"] || "Faerûn",
-              coords: row["X/Y_Coordinates"] || "",
-              quest: "SCL Collection",
-              format: row["Doc_Type"] || "Manuscripts",
-              summary: row["Doc_Description"] || row["Narrative_Summary/Subject_Headings"] || "",
+              subLocation: coords,
+              format: format,
+              summary: summary,
               subjects: subjects,
               assignedTo: ["Paige"],
-              archivistNote: row["Archival_Rationale"] || "",
-              text: row["Text"] || "",
+              archivistNote: rationale,
+              text: text,
               audioUrl: audioUrl,
-              duration: row["Duration"] || "",
-              narrator: row["Voice_Artist"] || "Chelsea Jones",
-              wikiLink: row["BG3_Wiki_Link"] || ""
+              duration: duration,
+              narrator: narrator,
+              wikiLink: wikiLink
             };
-          });
+          }).filter(item => item.id !== "");
 
           filteredData = [...archiveData];
           renderControlledVocabularyBar();
@@ -268,13 +270,17 @@
         },
         error: function(err) {
           console.error("CSV Fetch Error:", err);
-          document.getElementById('recordsContainer').innerHTML = `
-            <div class="p-8 text-center bg-red-950/40 border border-red-500/40 rounded-xl text-red-300 font-mono text-sm">
-              ⚠️ Failed to fetch Google Sheets database CSV.
-            </div>
-          `;
+          showError("Failed to fetch Google Sheets database. Please verify CSV output link.");
         }
       });
+    }
+
+    function showError(msg) {
+      document.getElementById('recordsContainer').innerHTML = `
+        <div class="p-8 text-center bg-red-950/40 border border-red-500/40 rounded-xl text-red-300 font-mono text-sm">
+          ⚠️ ${msg}
+        </div>
+      `;
     }
 
     function renderControlledVocabularyBar() {
@@ -294,7 +300,7 @@
       if (filteredData.length === 0) {
         container.innerHTML = `
           <div class="p-8 text-center bg-zinc-900 border border-zinc-800 rounded-xl">
-            <p class="text-zinc-400 font-mono text-sm">No archive records match your search or party reading list filter.</p>
+            <p class="text-zinc-400 font-mono text-sm">No archive records match your search or filter selections.</p>
           </div>
         `;
         return;
@@ -483,179 +489,6 @@
 
       filteredData = archiveData.filter(item => {
         const fullSearchableContent = `${item.title} ${item.summary} ${(item.subjects || []).map(s => '#' + s).join(' ')} ${item.subLocation} ${item.container || ''} ${item.text || ''}`.toLowerCase();
-        
-        if (query.includes(' AND ')) {
-          const terms = query.split(' AND ').map(t => t.trim().toLowerCase());
-          return terms.every(t => fullSearchableContent.includes(t));
-        } else if (query.includes(' OR ')) {
-          const terms = query.split(' OR ').map(t => t.trim().toLowerCase());
-          return terms.some(t => fullSearchableContent.includes(t));
-        } else if (query.startsWith('NOT ')) {
-          const term = query.replace('NOT ', '').trim().toLowerCase();
-          return !fullSearchableContent.includes(term);
-        } else {
-          return fullSearchableContent.includes(query.toLowerCase());
-        }
-      });
-
-      renderCards();
-    }
-
-    initArchive();
-  </script>
-                ${hasAudio ? `
-                  <div class="p-3 bg-amber-950/30 border border-amber-500/40 rounded-lg space-y-2">
-                    <div class="flex items-center justify-between text-xs font-mono text-amber-400 font-semibold">
-                      <span>🔊 Audio Recording (${item.duration || 'Stream'})</span>
-                      <span class="text-[10px] text-zinc-400">🎙️ ${item.narrator || 'Chelsea Jones'}</span>
-                    </div>
-                    <audio controls class="w-full h-8">
-                      <source src="${item.audioUrl}">
-                      Your browser does not support audio playback.
-                    </audio>
-                  </div>
-                ` : `
-                  <div class="p-3 bg-zinc-950 border border-zinc-800/80 rounded-lg flex items-center justify-between text-xs font-mono text-zinc-500">
-                    <span class="flex items-center gap-1.5">
-                      <span class="text-amber-500">⏳</span> Audio Recording Pending
-                    </span>
-                    <span class="px-2 py-0.5 bg-zinc-900 border border-zinc-800 rounded text-[10px] text-zinc-400">
-                      Coming Soon
-                    </span>
-                  </div>
-                `}
-              </div>
-
-              <div class="space-y-2 font-mono text-xs text-zinc-400 bg-zinc-950/50 p-3 rounded border border-zinc-800/80">
-                <div>
-                  <span class="text-amber-400 font-semibold uppercase">Assigned Companion:</span>
-                  <div class="flex flex-wrap gap-1 mt-1">${partyTags || '<span class="text-zinc-600">General Reading</span>'}</div>
-                </div>
-                <div>
-                  <span class="text-amber-400 font-semibold uppercase">Controlled Subjects:</span>
-                  <div class="flex flex-wrap gap-1 mt-1">
-                    ${item.subjects.map(s => `
-                      <button onclick="filterBySubject('${s.replace(/'/g, "\\'")}')" class="px-2 py-0.5 bg-zinc-800 hover:bg-amber-950/80 text-zinc-300 hover:text-amber-300 rounded border border-zinc-700 transition">
-                        #${s}
-                      </button>
-                    `).join('')}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="flex justify-end pt-2">
-              <button onclick="openModal(${index})" class="px-4 py-2 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 text-amber-300 font-semibold rounded-lg text-xs transition flex items-center gap-2">
-                📖 Read Text
-              </button>
-            </div>
-
-          </article>
-        `;
-      }).join('');
-    }
-
-    function openModal(index) {
-      const item = filteredData[index];
-      document.getElementById('modalTitle').innerText = item.title;
-      document.getElementById('modalRef').innerText = `${item.id} | ${item.subLocation}`;
-
-      const modalBody = document.getElementById('modalBody');
-      const transcriptContent = item.text && item.text.trim() !== "" 
-        ? item.text 
-        : "Transcript pending archival transcription.";
-
-      modalBody.innerHTML = `
-        <div class="mb-6 p-4 bg-zinc-950/80 border-l-4 border-amber-500 rounded text-sm text-zinc-300">
-          <h4 class="text-xs uppercase tracking-wider text-amber-400 font-bold mb-1">Narrative Summary</h4>
-          <p class="italic">${item.summary}</p>
-        </div>
-
-        <div class="prose prose-invert max-w-none text-zinc-200 leading-relaxed space-y-4">
-          <div class="flex items-center justify-between mb-2">
-            <h4 class="text-xs uppercase tracking-wider text-zinc-400 font-mono">📜 Text Transcript</h4>
-            <span class="text-xs text-zinc-500 font-mono">${item.container || 'Master SCL Index'}</span>
-          </div>
-          <div class="p-5 bg-zinc-950 border border-zinc-800 rounded-lg max-h-[55vh] overflow-y-auto font-serif text-sm leading-relaxed whitespace-pre-line text-zinc-300">
-            ${transcriptContent}
-          </div>
-        </div>
-      `;
-
-      document.getElementById('textModal').classList.remove('hidden');
-    }
-
-    function closeModal() {
-      document.getElementById('textModal').classList.add('hidden');
-    }
-
-    function toggleBooleanGuide() {
-      document.getElementById('booleanGuidePanel').classList.toggle('hidden');
-    }
-
-    function applySampleQuery(query) {
-      document.getElementById('searchInput').value = query;
-      executeSearch();
-    }
-
-    function filterBySubject(subject) {
-      document.getElementById('searchInput').value = `#${subject}`;
-      executeSearch();
-    }
-
-    function filterPartyMember(member) {
-      activePartyFilter = member;
-      applyFilters();
-    }
-
-    function applyFilters() {
-      const region = document.getElementById('regionSelect').value;
-      const container = document.getElementById('containerSelect').value;
-      const audioStatus = document.getElementById('audioSelect').value;
-      const sortOrder = document.getElementById('sortSelect').value;
-
-      filteredData = archiveData.filter(item => {
-        const matchesRegion = region === 'all' || item.location === region;
-        const matchesContainer = container === 'all' || item.container === container;
-        const matchesAudio = audioStatus === 'all' || 
-          (audioStatus === 'hasAudio' && item.audioUrl && item.audioUrl.trim() !== "") ||
-          (audioStatus === 'pendingAudio' && (!item.audioUrl || item.audioUrl.trim() === ""));
-        const matchesParty = activePartyFilter === 'all' || (item.assignedTo || []).includes(activePartyFilter);
-
-        return matchesRegion && matchesContainer && matchesAudio && matchesParty;
-      });
-
-      if (sortOrder === 'titleAZ') {
-        filteredData.sort((a, b) => a.title.localeCompare(b.title));
-      } else if (sortOrder === 'titleZA') {
-        filteredData.sort((a, b) => b.title.localeCompare(a.title));
-      } else if (sortOrder === 'location') {
-        filteredData.sort((a, b) => a.location.localeCompare(b.location));
-      }
-
-      renderCards();
-    }
-
-    function resetAllFilters() {
-      document.getElementById('searchInput').value = '';
-      document.getElementById('regionSelect').value = 'all';
-      document.getElementById('containerSelect').value = 'all';
-      document.getElementById('audioSelect').value = 'all';
-      document.getElementById('sortSelect').value = 'id';
-      activePartyFilter = 'all';
-      filteredData = [...archiveData];
-      renderCards();
-    }
-
-    function executeSearch() {
-      const query = document.getElementById('searchInput').value.trim();
-      if (!query) {
-        applyFilters();
-        return;
-      }
-
-      filteredData = archiveData.filter(item => {
-        const fullSearchableContent = `${item.title} ${item.summary} ${(item.subjects || []).map(s => '#' + s).join(' ')} ${item.subLocation} ${item.container || ''} ${(item.assignedTo || []).join(' ')} ${item.text || ''}`.toLowerCase();
         
         if (query.includes(' AND ')) {
           const terms = query.split(' AND ').map(t => t.trim().toLowerCase());
