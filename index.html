@@ -177,16 +177,72 @@
     let archiveData = [];
     let filteredData = [];
 
-    function initArchive() {
-      Papa.parse(PROXY_URL, {
-        download: true,
-        header: true,
-        skipEmptyLines: true,
-        complete: function(results) {
-          if (!results.data || results.data.length === 0) {
-            showError("No data rows returned from spreadsheet.");
-            return;
-          }
+  function initArchive() {
+      fetch('./data.json')
+        .then(response => {
+          if (!response.ok) throw new Error("Network response was not ok");
+          return response.json();
+        })
+        .then(data => {
+          archiveData = data.map(row => {
+            const getVal = (...keys) => {
+              for (let k of keys) {
+                if (row[k] !== undefined && row[k] !== null) return String(row[k]).trim();
+              }
+              return "";
+            };
+
+            const itemId = getVal("Item_ID", "ItemID", "Item ID", "ID");
+            const title = getVal("Item_Name", "ItemName", "Title") || "Untitled Record";
+            const format = getVal("Doc_Type", "Format") || "Manuscripts";
+            const summary = getVal("Doc_Description", "Narrative_Summary", "Description") || "";
+            const text = getVal("Text", "Full_Doc_Path", "Transcript") || "";
+            const coords = getVal("Location_Coordinates", "X/Y_Coordinates", "Coordinates") || "Faerûn";
+            const rationale = getVal("Archival_Rationale", "Rationale") || "";
+            const duration = getVal("Duration") || "";
+            const narrator = getVal("Voice_Artist", "Voice Artist") || "Chelsea Jones";
+            const wikiLink = getVal("BG3_Wiki_Link", "Wiki Link") || "";
+
+            const rawSubjects = getVal("Controlled_Vocabulary", "Subject_Headings") || "";
+            const subjects = rawSubjects.split(/;|,/).map(s => s.trim()).filter(Boolean);
+
+            const container = itemId.includes("SCL-BB") ? "Book Bag" : (itemId.includes("SCL-BOH") ? "Bag of Holding" : "Book Bag");
+
+            const audioPath = getVal("Audio_Path", "AudioPath") || "";
+            let audioUrl = "";
+            if (audioPath && !audioPath.startsWith("http")) {
+              audioUrl = `https://github.com/chelseajones-a11y/astral-prism-archive/raw/refs/heads/main/${audioPath}`;
+            } else {
+              audioUrl = audioPath;
+            }
+
+            return {
+              id: itemId,
+              title: title,
+              container: container,
+              subLocation: coords,
+              format: format,
+              summary: summary,
+              subjects: subjects,
+              assignedTo: ["Paige"],
+              archivistNote: rationale,
+              text: text,
+              audioUrl: audioUrl,
+              duration: duration,
+              narrator: narrator,
+              wikiLink: wikiLink
+            };
+          }).filter(item => item.id !== "");
+
+          filteredData = [...archiveData];
+          renderControlledVocabularyBar();
+          renderCards();
+        })
+        .catch(err => {
+          console.error("Data Load Error:", err);
+          showError("Failed to load local data.json file.");
+        });
+    }
 
           archiveData = results.data.map(row => {
             // Flexible Key Matcher to avoid casing/underscore drops
