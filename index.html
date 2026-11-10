@@ -213,10 +213,8 @@
     </div>
   </div>
 
-  <script>
-    // AFTER (Bypasses CORS via Proxy)
-const CSV_URL = "https://corsproxy.io/?" + encodeURIComponent("https://docs.google.com/spreadsheets/d/e/2PACX-1vRvHgsh0UiBphbrCs3gOzkpAWxDREwOYG_sR7Kii-7NSq9_VpRjhUDlGNhTyuP3gQ/pub?output=csv");
-    
+<script>
+    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRvHgsh0UiBphbrCs3gOzkpAWxDREwOYG_sR7Kii-7NSq9_VpRjhUDlGNhTyuP3gQ/pub?output=csv";
 
     let archiveData = [];
     let filteredData = [];
@@ -229,10 +227,12 @@ const CSV_URL = "https://corsproxy.io/?" + encodeURIComponent("https://docs.goog
         skipEmptyLines: true,
         complete: function(results) {
           archiveData = results.data.map(row => {
-            const rawSubjects = row["Controlled_Vocabulary"] || row["Subject_Headings"] || "";
+            const rawSubjects = row["Controlled_Vocabulary"] || row["Narrative_Summary/Subject_Headings"] || "";
             const subjects = rawSubjects.split(';').map(s => s.trim()).filter(Boolean);
 
-            const container = (row["Item_ID"] || "").includes("SCL-BB") ? "Book Bag" : "Bag of Holding";
+            const itemId = row["Item_ID"] || "";
+            const container = itemId.includes("SCL-BB") ? "Book Bag" : "Bag of Holding";
+            
             const audioPath = row["Audio_Path"] || "";
             let audioUrl = "";
             if (audioPath && !audioPath.startsWith("http")) {
@@ -242,22 +242,23 @@ const CSV_URL = "https://corsproxy.io/?" + encodeURIComponent("https://docs.goog
             }
 
             return {
-              id: row["Item_ID"] || "",
+              id: itemId,
               title: row["Item_Name"] || "Untitled Record",
               container: container,
-              location: row["Location"] || "Wilderness",
-              subLocation: row["Sub_Location"] || row["X/Y_Coordinates"] || "",
+              location: "Wilderness",
+              subLocation: row["X/Y_Coordinates"] || "Faerûn",
               coords: row["X/Y_Coordinates"] || "",
-              quest: row["Quest"] || "Explore",
+              quest: "SCL Collection",
               format: row["Doc_Type"] || "Manuscripts",
-              summary: row["Narrative_Summary"] || row["Doc_Description"] || "",
+              summary: row["Doc_Description"] || row["Narrative_Summary/Subject_Headings"] || "",
               subjects: subjects,
-              assignedTo: (row["Assigned_Companion"] || "Paige").split(';').map(c => c.trim()),
+              assignedTo: ["Paige"],
               archivistNote: row["Archival_Rationale"] || "",
               text: row["Text"] || "",
               audioUrl: audioUrl,
               duration: row["Duration"] || "",
-              narrator: row["Voice_Artist"] || "Chelsea Jones"
+              narrator: row["Voice_Artist"] || "Chelsea Jones",
+              wikiLink: row["BG3_Wiki_Link"] || ""
             };
           });
 
@@ -269,7 +270,7 @@ const CSV_URL = "https://corsproxy.io/?" + encodeURIComponent("https://docs.goog
           console.error("CSV Fetch Error:", err);
           document.getElementById('recordsContainer').innerHTML = `
             <div class="p-8 text-center bg-red-950/40 border border-red-500/40 rounded-xl text-red-300 font-mono text-sm">
-              ⚠️ Failed to fetch Google Sheets database CSV. Check network tab or sheet permissions.
+              ⚠️ Failed to fetch Google Sheets database CSV.
             </div>
           `;
         }
@@ -301,16 +302,6 @@ const CSV_URL = "https://corsproxy.io/?" + encodeURIComponent("https://docs.goog
 
       container.innerHTML = filteredData.map((item, index) => {
         const hasAudio = item.audioUrl && item.audioUrl.trim() !== "";
-        const partyTags = (item.assignedTo || []).map(p => {
-          if (p === 'Gale') return `<span class="px-2 py-0.5 bg-blue-950/80 text-blue-300 border border-blue-500/40 rounded text-[10px]">🔮 Gale</span>`;
-          if (p === 'Laezel' || p === "Lae'zel") return `<span class="px-2 py-0.5 bg-red-950/80 text-red-300 border border-red-500/40 rounded text-[10px]">🗡️ Lae'zel</span>`;
-          if (p === 'Shadowheart') return `<span class="px-2 py-0.5 bg-slate-900 text-slate-300 border border-slate-500/40 rounded text-[10px]">🌙 Shadowheart</span>`;
-          if (p === 'Astarion') return `<span class="px-2 py-0.5 bg-rose-950/80 text-rose-300 border border-rose-500/40 rounded text-[10px]">🩸 Astarion</span>`;
-          if (p === 'Wyll') return `<span class="px-2 py-0.5 bg-yellow-950/80 text-yellow-300 border border-yellow-500/40 rounded text-[10px]">⚔️ Wyll</span>`;
-          if (p === 'Karlach') return `<span class="px-2 py-0.5 bg-orange-950/80 text-orange-300 border border-orange-500/40 rounded text-[10px]">🔥 Karlach</span>`;
-          if (p === 'Paige') return `<span class="px-2 py-0.5 bg-purple-950/80 text-purple-300 border border-purple-500/40 rounded text-[10px]">🧙‍♀️ Paige</span>`;
-          return '';
-        }).join(' ');
 
         return `
           <article class="bg-zinc-900/90 border border-zinc-800 hover:border-amber-500/40 rounded-xl p-5 shadow-lg space-y-4">
@@ -319,9 +310,9 @@ const CSV_URL = "https://corsproxy.io/?" + encodeURIComponent("https://docs.goog
               <div>
                 <span class="text-xs font-mono font-bold text-amber-400 uppercase tracking-widest">${item.id}</span>
                 <span class="px-2 py-0.5 text-[10px] font-mono bg-purple-950/80 text-purple-300 border border-purple-500/30 rounded ml-2">
-                  📦 ${item.container || 'Archive'}
+                  📦 ${item.container}
                 </span>
-                <span class="text-xs text-zinc-400 ml-2 font-mono">${item.subLocation}</span>
+                <span class="text-xs text-zinc-400 ml-2 font-mono">📍 ${item.subLocation}</span>
               </div>
               <span class="px-2.5 py-0.5 text-[11px] font-mono bg-zinc-800 text-zinc-300 rounded-full border border-zinc-700">
                 ${item.format}
@@ -342,6 +333,176 @@ const CSV_URL = "https://corsproxy.io/?" + encodeURIComponent("https://docs.goog
                   </div>
                 ` : ''}
 
+                ${hasAudio ? `
+                  <div class="p-3 bg-amber-950/30 border border-amber-500/40 rounded-lg space-y-2">
+                    <div class="flex items-center justify-between text-xs font-mono text-amber-400 font-semibold">
+                      <span>🔊 Audio Recording (${item.duration || 'Stream'})</span>
+                      <span class="text-[10px] text-zinc-400">🎙️ ${item.narrator}</span>
+                    </div>
+                    <audio controls class="w-full h-8">
+                      <source src="${item.audioUrl}">
+                      Your browser does not support audio playback.
+                    </audio>
+                  </div>
+                ` : `
+                  <div class="p-3 bg-zinc-950 border border-zinc-800/80 rounded-lg flex items-center justify-between text-xs font-mono text-zinc-500">
+                    <span class="flex items-center gap-1.5">
+                      <span class="text-amber-500">⏳</span> Audio Recording Pending
+                    </span>
+                    <span class="px-2 py-0.5 bg-zinc-900 border border-zinc-800 rounded text-[10px] text-zinc-400">
+                      Coming Soon
+                    </span>
+                  </div>
+                `}
+              </div>
+
+              <div class="space-y-2 font-mono text-xs text-zinc-400 bg-zinc-950/50 p-3 rounded border border-zinc-800/80">
+                <div>
+                  <span class="text-amber-400 font-semibold uppercase">Controlled Subjects:</span>
+                  <div class="flex flex-wrap gap-1 mt-1">
+                    ${item.subjects.map(s => `
+                      <button onclick="filterBySubject('${s.replace(/'/g, "\\'")}')" class="px-2 py-0.5 bg-zinc-800 hover:bg-amber-950/80 text-zinc-300 hover:text-amber-300 rounded border border-zinc-700 transition">
+                        #${s}
+                      </button>
+                    `).join('')}
+                  </div>
+                </div>
+                ${item.wikiLink ? `
+                  <div class="pt-2">
+                    <a href="${item.wikiLink}" target="_blank" class="text-amber-400 hover:underline text-[11px]">
+                      🔗 View BG3 Wiki Reference Page ↗
+                    </a>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+
+            <div class="flex justify-end pt-2">
+              <button onclick="openModal(${index})" class="px-4 py-2 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 text-amber-300 font-semibold rounded-lg text-xs transition flex items-center gap-2">
+                📖 Read Text
+              </button>
+            </div>
+
+          </article>
+        `;
+      }).join('');
+    }
+
+    function openModal(index) {
+      const item = filteredData[index];
+      document.getElementById('modalTitle').innerText = item.title;
+      document.getElementById('modalRef').innerText = `${item.id} | ${item.subLocation}`;
+
+      const modalBody = document.getElementById('modalBody');
+      const transcriptContent = item.text && item.text.trim() !== "" 
+        ? item.text 
+        : "Transcript pending archival transcription.";
+
+      modalBody.innerHTML = `
+        <div class="mb-6 p-4 bg-zinc-950/80 border-l-4 border-amber-500 rounded text-sm text-zinc-300">
+          <h4 class="text-xs uppercase tracking-wider text-amber-400 font-bold mb-1">Narrative Summary</h4>
+          <p class="italic">${item.summary}</p>
+        </div>
+
+        <div class="prose prose-invert max-w-none text-zinc-200 leading-relaxed space-y-4">
+          <div class="flex items-center justify-between mb-2">
+            <h4 class="text-xs uppercase tracking-wider text-zinc-400 font-mono">📜 Text Transcript</h4>
+            <span class="text-xs text-zinc-500 font-mono">${item.container}</span>
+          </div>
+          <div class="p-5 bg-zinc-950 border border-zinc-800 rounded-lg max-h-[55vh] overflow-y-auto font-serif text-sm leading-relaxed whitespace-pre-line text-zinc-300">
+            ${transcriptContent}
+          </div>
+        </div>
+      `;
+
+      document.getElementById('textModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('textModal').classList.add('hidden');
+    }
+
+    function toggleBooleanGuide() {
+      document.getElementById('booleanGuidePanel').classList.toggle('hidden');
+    }
+
+    function applySampleQuery(query) {
+      document.getElementById('searchInput').value = query;
+      executeSearch();
+    }
+
+    function filterBySubject(subject) {
+      document.getElementById('searchInput').value = `#${subject}`;
+      executeSearch();
+    }
+
+    function filterPartyMember(member) {
+      activePartyFilter = member;
+      applyFilters();
+    }
+
+    function applyFilters() {
+      const container = document.getElementById('containerSelect').value;
+      const audioStatus = document.getElementById('audioSelect').value;
+      const sortOrder = document.getElementById('sortSelect').value;
+
+      filteredData = archiveData.filter(item => {
+        const matchesContainer = container === 'all' || item.container === container;
+        const matchesAudio = audioStatus === 'all' || 
+          (audioStatus === 'hasAudio' && item.audioUrl && item.audioUrl.trim() !== "") ||
+          (audioStatus === 'pendingAudio' && (!item.audioUrl || item.audioUrl.trim() === ""));
+
+        return matchesContainer && matchesAudio;
+      });
+
+      if (sortOrder === 'titleAZ') {
+        filteredData.sort((a, b) => a.title.localeCompare(b.title));
+      } else if (sortOrder === 'titleZA') {
+        filteredData.sort((a, b) => b.title.localeCompare(a.title));
+      }
+
+      renderCards();
+    }
+
+    function resetAllFilters() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('containerSelect').value = 'all';
+      document.getElementById('audioSelect').value = 'all';
+      document.getElementById('sortSelect').value = 'id';
+      activePartyFilter = 'all';
+      filteredData = [...archiveData];
+      renderCards();
+    }
+
+    function executeSearch() {
+      const query = document.getElementById('searchInput').value.trim();
+      if (!query) {
+        applyFilters();
+        return;
+      }
+
+      filteredData = archiveData.filter(item => {
+        const fullSearchableContent = `${item.title} ${item.summary} ${(item.subjects || []).map(s => '#' + s).join(' ')} ${item.subLocation} ${item.container || ''} ${item.text || ''}`.toLowerCase();
+        
+        if (query.includes(' AND ')) {
+          const terms = query.split(' AND ').map(t => t.trim().toLowerCase());
+          return terms.every(t => fullSearchableContent.includes(t));
+        } else if (query.includes(' OR ')) {
+          const terms = query.split(' OR ').map(t => t.trim().toLowerCase());
+          return terms.some(t => fullSearchableContent.includes(t));
+        } else if (query.startsWith('NOT ')) {
+          const term = query.replace('NOT ', '').trim().toLowerCase();
+          return !fullSearchableContent.includes(term);
+        } else {
+          return fullSearchableContent.includes(query.toLowerCase());
+        }
+      });
+
+      renderCards();
+    }
+
+    initArchive();
+  </script>
                 ${hasAudio ? `
                   <div class="p-3 bg-amber-950/30 border border-amber-500/40 rounded-lg space-y-2">
                     <div class="flex items-center justify-between text-xs font-mono text-amber-400 font-semibold">
