@@ -63,6 +63,74 @@
         <div class="relative flex-1">
           <input type="text" id="searchInput" onkeyup="executeSearch()" 
             placeholder="Search titles, transcripts, controlled subjects (e.g. Hag AND Bargain)..." 
+            class="w-full bgHere is the complete, updated `index.html` file. Replacing the entire contents of your `index.html` with this code will implement the CORS proxy fallback, flexible header matching, and transcript modal:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>✨ ASTRAL PRISM ARCHIVE ✨</title>
+  <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+  <!-- PapaParse for CSV Parsing -->
+  <script src="[https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js](https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js)"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            wilderness: '#4ade80',
+            underdark: '#a855f7',
+            grymforge: '#f97316',
+            monastery: '#eab308'
+          }
+        }
+      }
+    }
+  </script>
+  <link href="[https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap](https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap)" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #09090b; color: #f4f4f5; }
+    .cinzel { font-family: 'Cinzel', serif; }
+  </style>
+</head>
+<body class="min-h-screen pb-16">
+
+  <!-- Header Section -->
+  <header class="border-b border-amber-500/20 bg-zinc-950/90 sticky top-0 z-40 backdrop-blur-md px-4 py-6 text-center">
+    <div class="max-w-6xl mx-auto">
+      <h1 class="cinzel text-3xl sm:text-5xl font-black tracking-wider text-amber-400 drop-shadow-[0_2px_10px_rgba(251,191,36,0.3)] mb-2">
+        ✨ ASTRAL PRISM ARCHIVE ✨
+      </h1>
+      <p class="text-zinc-400 text-sm sm:text-base max-w-2xl mx-auto mb-4">
+        Faerûn Audio Transcripts, Books, Recipes, Journals, Tomes & Field Records
+      </p>
+      
+      <div class="flex flex-wrap items-center justify-center gap-3 text-xs font-mono">
+        <span class="px-3 py-1 bg-emerald-950/80 text-emerald-400 border border-emerald-500/40 rounded-full font-semibold">
+          ✓ Act I: Completed
+        </span>
+        <span class="px-3 py-1 bg-amber-950/80 text-amber-400 border border-amber-500/40 rounded-full font-semibold animate-pulse">
+          ⏳ Act II: In Progress
+        </span>
+        <span class="px-3 py-1 bg-zinc-900 text-zinc-500 border border-zinc-800 rounded-full font-semibold">
+          🔒 Act III: Coming Soon
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 mt-8 space-y-6">
+
+    <!-- ARCHIVAL RETRIEVAL SUITE -->
+    <section class="bg-zinc-900/90 border border-amber-500/30 rounded-xl p-5 shadow-2xl space-y-5">
+      
+      <!-- Search Input Bar -->
+      <div class="flex flex-col sm:flex-row gap-3">
+        <div class="relative flex-1">
+          <input type="text" id="searchInput" onkeyup="executeSearch()" 
+            placeholder="Search titles, transcripts, controlled subjects (e.g. Hag AND Bargain)..." 
             class="w-full bg-zinc-950 border border-zinc-700 text-zinc-100 placeholder-zinc-500 px-4 py-3 rounded-lg focus:outline-none focus:border-amber-400 font-mono text-sm">
         </div>
         <button onclick="executeSearch()" class="px-6 py-3 bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold rounded-lg text-sm transition-colors cinzel">
@@ -169,7 +237,8 @@
   </div>
 
   <script>
-    const RAW_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRvHgsh0UiBphbrCs3gOzkpAWxDREwOYG_sR7Kii-7NSq9_VpRjhUDlGNhTyuP3gQ/pub?output=csv";
+    const RAW_CSV_URL = "[https://docs.google.com/spreadsheets/d/e/2PACX-1vRvHgsh0UiBphbrCs3gOzkpAWxDREwOYG_sR7Kii-7NSq9_VpRjhUDlGNhTyuP3gQ/pub?output=csv](https://docs.google.com/spreadsheets/d/e/2PACX-1vRvHgsh0UiBphbrCs3gOzkpAWxDREwOYG_sR7Kii-7NSq9_VpRjhUDlGNhTyuP3gQ/pub?output=csv)";
+    const PROXY_URL = "[https://api.allorigins.win/raw?url=](https://api.allorigins.win/raw?url=)" + encodeURIComponent(RAW_CSV_URL);
 
     let archiveData = [];
     let filteredData = [];
@@ -180,70 +249,84 @@
         header: true,
         skipEmptyLines: true,
         complete: function(results) {
-          archiveData = results.data.map(row => {
-            const getVal = (...keys) => {
-              for (let k of keys) {
-                if (row[k] !== undefined && row[k] !== null) return row[k].trim();
-              }
-              const rowKeys = Object.keys(row);
-              for (let k of keys) {
-                const target = k.toLowerCase().replace(/[^a-z0-9]/g, '');
-                const foundKey = rowKeys.find(rk => rk.toLowerCase().replace(/[^a-z0-9]/g, '') === target);
-                if (foundKey && row[foundKey] !== undefined) return row[foundKey].trim();
-              }
-              return "";
-            };
-
-            const itemId = getVal("Item_ID", "ItemID", "Item ID", "ID");
-            const title = getVal("Item_Name", "ItemName", "Item Name", "Title") || "Untitled Record";
-            const docType = getVal("Doc_Type", "DocType", "Format") || "Manuscripts";
-            const summary = getVal("Doc_Description", "Narrative_Summary", "Description") || "";
-            const text = getVal("Text", "Full_Doc_Path", "Transcript") || "";
-            const coords = getVal("Location_Coordinates", "X/Y_Coordinates", "Coordinates") || "Faerûn";
-            const rationale = getVal("Archival_Rationale", "Rationale") || "";
-            const duration = getVal("Duration") || "";
-            const narrator = getVal("Voice_Artist", "Voice Artist") || "Chelsea Jones";
-            const wikiLink = getVal("BG3_Wiki_Link", "Wiki Link") || "";
-
-            const rawSubjects = getVal("Controlled_Vocabulary", "Subject_Headings") || "";
-            const subjects = rawSubjects.split(/;|,/).map(s => s.trim()).filter(Boolean);
-
-            const container = itemId.includes("SCL-BB") ? "Book Bag" : (itemId.includes("SCL-BOH") ? "Bag of Holding" : "Book Bag");
-
-            const audioPath = getVal("Audio_Path", "AudioPath") || "";
-            let audioUrl = "";
-            if (audioPath && !audioPath.startsWith("http")) {
-              audioUrl = `https://github.com/chelseajones-a11y/astral-prism-archive/raw/refs/heads/main/${audioPath}`;
-            } else {
-              audioUrl = audioPath;
-            }
-
-            return {
-              id: itemId,
-              title: title,
-              container: container,
-              subLocation: coords,
-              format: docType,
-              summary: summary,
-              subjects: subjects,
-              archivistNote: rationale,
-              text: text,
-              audioUrl: audioUrl,
-              duration: duration,
-              narrator: narrator,
-              wikiLink: wikiLink
-            };
-          }).filter(item => item.id !== "");
-
-          filteredData = [...archiveData];
-          renderControlledVocabularyBar();
-          renderCards();
+          processCSVResults(results.data);
         },
-        error: function(err) {
-          console.error("CSV Fetch Error:", err);
-          showError("Failed to fetch Google Sheets database. Check network permissions.");
+        error: function() {
+          // Retry using CORS proxy if direct download is blocked
+          Papa.parse(PROXY_URL, {
+            download: true,
+            header: true,
+            skipEmptyLines: true,
+            complete: function(results) {
+              processCSVResults(results.data);
+            },
+            error: function(err) {
+              console.error("CSV Fetch Error:", err);
+              showError("Failed to fetch Google Sheets database. Verify published sheet settings.");
+            }
+          });
         }
       });
+    }
+
+    function processCSVResults(rawData) {
+      archiveData = rawData.map((row, index) => {
+        const getVal = (...keys) => {
+          const rowKeys = Object.keys(row);
+          for (let k of keys) {
+            const target = k.toLowerCase().replace(/[^a-z0-9]/g, '');
+            const foundKey = rowKeys.find(rk => rk.toLowerCase().replace(/[^a-z0-9]/g, '') === target);
+            if (foundKey && row[foundKey] !== undefined && row[foundKey] !== null) {
+              return String(row[foundKey]).trim();
+            }
+          }
+          return "";
+        };
+
+        const itemId = getVal("Item_ID", "ItemID", "Item ID", "ID", "Identifier") || `RECORD-${index + 1}`;
+        const title = getVal("Item_Name", "ItemName", "Item Name", "Title", "Name") || "Untitled Record";
+        const docType = getVal("Doc_Type", "DocType", "Format", "Type") || "Manuscripts";
+        const summary = getVal("Doc_Description", "Narrative_Summary", "Description", "Summary") || "";
+        const text = getVal("Text", "Full_Doc_Path", "Transcript", "Content") || "";
+        const coords = getVal("Location_Coordinates", "X/Y_Coordinates", "Coordinates", "Location") || "Faerûn";
+        const rationale = getVal("Archival_Rationale", "Rationale", "Archivist Note") || "";
+        const duration = getVal("Duration") || "";
+        const narrator = getVal("Voice_Artist", "Voice Artist", "Narrator") || "Chelsea Jones";
+        const wikiLink = getVal("BG3_Wiki_Link", "Wiki Link", "Link") || "";
+
+        const rawSubjects = getVal("Controlled_Vocabulary", "Subject_Headings", "Subjects", "Tags") || "";
+        const subjects = rawSubjects.split(/;|,/).map(s => s.trim()).filter(Boolean);
+
+        const container = itemId.includes("SCL-BB") ? "Book Bag" : (itemId.includes("SCL-BOH") ? "Bag of Holding" : "Book Bag");
+
+        const audioPath = getVal("Audio_Path", "AudioPath", "Audio") || "";
+        let audioUrl = "";
+        if (audioPath && !audioPath.startsWith("http")) {
+          audioUrl = `[https://github.com/chelseajones-a11y/astral-prism-archive/raw/refs/heads/main/$](https://github.com/chelseajones-a11y/astral-prism-archive/raw/refs/heads/main/$){audioPath}`;
+        } else {
+          audioUrl = audioPath;
+        }
+
+        return {
+          id: itemId,
+          title: title,
+          container: container,
+          subLocation: coords,
+          format: docType,
+          summary: summary,
+          subjects: subjects,
+          archivistNote: rationale,
+          text: text,
+          audioUrl: audioUrl,
+          duration: duration,
+          narrator: narrator,
+          wikiLink: wikiLink
+        };
+      }).filter(item => item.title !== "Untitled Record" || item.summary !== "" || item.text !== "");
+
+      filteredData = [...archiveData];
+      renderControlledVocabularyBar();
+      renderCards();
     }
 
     function showError(msg) {
@@ -357,17 +440,12 @@
       const sortFilter = document.getElementById('sortSelect').value;
 
       filteredData = archiveData.filter(item => {
-        // Container Filter
         if (containerFilter !== 'all' && item.container !== containerFilter) return false;
-
-        // Audio Filter
         if (audioFilter === 'hasAudio' && !item.audioUrl) return false;
         if (audioFilter === 'pendingAudio' && item.audioUrl) return false;
 
-        // Search Query (Basic Boolean handling)
         if (query) {
           const searchable = `${item.id} ${item.title} ${item.summary} ${item.subjects.join(' ')} ${item.text}`.toLowerCase();
-          
           if (query.includes(' and ')) {
             const terms = query.split(' and ').map(t => t.trim());
             return terms.every(t => searchable.includes(t));
@@ -381,11 +459,9 @@
             return searchable.includes(query);
           }
         }
-
         return true;
       });
 
-      // Sorting
       if (sortFilter === 'titleAZ') {
         filteredData.sort((a, b) => a.title.localeCompare(b.title));
       } else if (sortFilter === 'titleZA') {
@@ -422,7 +498,6 @@
       document.getElementById('textModal').classList.add('hidden');
     }
 
-    // Auto-run when DOM is loaded
     document.addEventListener('DOMContentLoaded', initArchive);
   </script>
 </body>
