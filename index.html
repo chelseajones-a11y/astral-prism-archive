@@ -169,31 +169,38 @@
   </div>
 
   <script>
-const RAW_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRvHgsh0UiBphbrCs3gOzkpAWxDREwOYG_sR7Kii-7NSq9_VpRjhUDlGNhTyuP3gQ/pub?gid=327381678&single=true&output=csv";
-    const PROXY_URL = "https://api.allorigins.win/raw?url=" + encodeURIComponent(RAW_CSV_URL);
+    const RAW_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRvHgsh0UiBphbrCs3gOzkpAWxDREwOYG_sR7Kii-7NSq9_VpRjhUDlGNhTyuP3gQ/pub?gid=327381678&single=true&output=csv";
+    const PROXY_1 = "https://corsproxy.io/?" + encodeURIComponent(RAW_CSV_URL);
+    const PROXY_2 = "https://api.allorigins.win/raw?url=" + encodeURIComponent(RAW_CSV_URL);
 
     let archiveData = [];
     let filteredData = [];
 
     function initArchive() {
-      // 1. Native browser fetch first
       fetch(RAW_CSV_URL)
         .then(res => {
-          if (!res.ok) throw new Error("Direct fetch blocked");
+          if (!res.ok) throw new Error("Direct fetch failed");
           return res.text();
         })
         .then(csvText => parseAndRenderCSV(csvText))
         .catch(() => {
-          // 2. Fallback to CORS proxy if direct fetch fails
-          fetch(PROXY_URL)
+          fetch(PROXY_1)
             .then(res => {
-              if (!res.ok) throw new Error("Proxy fetch blocked");
+              if (!res.ok) throw new Error("Proxy 1 failed");
               return res.text();
             })
             .then(csvText => parseAndRenderCSV(csvText))
-            .catch(err => {
-              console.error("CSV Fetch Error:", err);
-              showError("Failed to fetch Google Sheets database. Verify published sheet settings and permissions.");
+            .catch(() => {
+              fetch(PROXY_2)
+                .then(res => {
+                  if (!res.ok) throw new Error("Proxy 2 failed");
+                  return res.text();
+                })
+                .then(csvText => parseAndRenderCSV(csvText))
+                .catch(err => {
+                  console.error("CSV Fetch Error:", err);
+                  showError("Failed to fetch Google Sheets database. Verify published sheet settings.");
+                });
             });
         });
     }
@@ -222,26 +229,7 @@ const RAW_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRvHgsh0UiB
           return "";
         };
 
-        const itemId = getVal("Item_ID", "ItemID", "Item ID", "ID", "Identifier") || `RECORD-${index + 1}`;
-        const title = getVal("Item_Name", "ItemName", "Item Name", "Title", "Name") || "Untitled Record";
-        const docType = getVal("Doc_Type", "DocType", "Format", "Type") || "Manuscripts";
-        const summary = getVal("Doc_Description", "Narrative_Summary", "Description", "Summary") || "";
-        const text = getVal("Text", "Full_Doc_Path", "Transcript", "Content") || "";
-        const coords = getVal("Location_Coordinates", "X/Y_Coordinates", "Coordinates", "Location") || "Faerûn";
-        const rationale = getVal("Archival_Rationale", "Rationale", "Archivist Note") || "";
-        const duration = getVal("Duration") || "";
-        const narrator = getVal("Voice_Artist", "Voice Artist", "Narrator") || "Chelsea Jones";
-        const wikiLink = getVal("BG3_Wiki_Link", "Wiki Link", "Link") || "";
-
-        const rawSubjects = getVal("Controlled_Vocabulary", "Subject_Headings", "Subjects", "Tags") || "";
-        const subjects = rawSubjects.split(/;|,/).map(s => s.trim()).filter(Boolean);
-
-        const container = itemId.includes("SCL-BB") ? "Book Bag" : (itemId.includes("SCL-BOH") ? "Bag of Holding" : "Book Bag");
-
-        const audioPath = getVal("Audio_Path", "AudioPath", "Audio") || "";
-        let audioUrl = "";
-        if (audioPath && !audioPath.startsWith("http")) {
-          audioUrl = `https://github.com/chelseajones-a11y/astral-prism-archive/raw/refs/heads/main/${audioPath}`;
+        const itemId = getVal("Audio_Path", "Item_ID", "ItemID", "Item ID", "ID") || `RECORD-${index + 1}`; const title = getVal("Item_Name", "ItemName", "Item Name", "Title", "Name") \vert{}\vert{} "Untitled Record"; const docType = getVal("Doc_Type", "DocType", "Format", "Type") \vert{}\vert{} "Manuscripts"; const summary = getVal("Narrative_Summary", "Doc_Description", "Description", "Summary") \vert{}\vert{} ""; const text = getVal("Text", "Full_Doc_Path", "Transcript", "Content") \vert{}\vert{} ""; const coords = getVal("Location_Coordinates", "X/Y_Coordinates", "Coordinates", "Location") \vert{}\vert{} "Faerûn"; const rationale = getVal("Archival_Rationale", "Rationale", "Archivist Note") \vert{}\vert{} ""; const duration = getVal("Duration") \vert{}\vert{} ""; const narrator = getVal("Voice_Artist", "Voice Artist", "Narrator") \vert{}\vert{} "Chelsea Jones"; const wikiLink = getVal("BG3_Wiki_Link", "Wiki Link", "Link") \vert{}\vert{} "";  const rawSubjects = getVal("Controlled_Vocabulary", "Subject_Headings", "Subjects", "Tags") \vert{}\vert{} ""; const subjects = rawSubjects.split(/;\vert{},/).map(s => s.trim()).filter(Boolean);  const rawContainer = getVal("Storage_Container", "Container") \vert{}\vert{} ""; const container = rawContainer \vert{}\vert{} (itemId.includes("SCL-BOH") ? "Bag of Holding" : "Book Bag");  const audioPath = getVal("Audio_Path", "AudioPath", "Audio") \vert{}\vert{} ""; let audioUrl = ""; if (audioPath && !audioPath.startsWith("http")) { audioUrl = `https://github.com/chelseajones-a11y/astral-prism-archive/raw/refs/heads/main/${audioPath}`;
         } else {
           audioUrl = audioPath;
         }
@@ -261,7 +249,7 @@ const RAW_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRvHgsh0UiB
           narrator: narrator,
           wikiLink: wikiLink
         };
-      }).filter(item => item.title !== "Untitled Record" || item.summary !== "" || item.text !== "");
+      }).filter(item => item.id !== "" || item.title !== "Untitled Record" || item.summary !== "");
 
       filteredData = [...archiveData];
       renderControlledVocabularyBar();
@@ -322,122 +310,4 @@ const RAW_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRvHgsh0UiB
             </div>
           ` : ''}
 
-          <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-zinc-800/60 text-xs">
-            <div class="flex items-center gap-3">
-              ${item.text ? `
-                <button onclick="openModal('${item.id}')" class="px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded font-mono transition">
-                  📖 Read Transcript
-                </button>
-              ` : ''}
-              ${item.wikiLink ? `
-                <a href="${item.wikiLink}" target="_blank" class="text-zinc-400 hover:text-amber-400 font-mono underline">
-                  🔗 BG3 Wiki
-                </a>
-              ` : ''}
-            </div>
-            ${item.audioUrl ? `
-              <audio controls class="h-8 max-w-[220px]">
-                <source src="${item.audioUrl}" type="audio/mpeg">
-              </audio>
-            ` : '<span class="text-zinc-500 font-mono text-[11px]">⏳ Audio Pending</span>'}
-          </div>
-        </article>
-      `).join('');
-    }
-
-    function executeSearch() {
-      applyFilters();
-    }
-
-    function toggleBooleanGuide() {
-      const panel = document.getElementById('booleanGuidePanel');
-      panel.classList.toggle('hidden');
-    }
-
-    function applySampleQuery(q) {
-      document.getElementById('searchInput').value = q;
-      executeSearch();
-    }
-
-    function filterBySubject(subj) {
-      document.getElementById('searchInput').value = subj;
-      executeSearch();
-    }
-
-    function resetAllFilters() {
-      document.getElementById('searchInput').value = '';
-      document.getElementById('containerSelect').value = 'all';
-      document.getElementById('audioSelect').value = 'all';
-      document.getElementById('sortSelect').value = 'id';
-      applyFilters();
-    }
-
-    function applyFilters() {
-      const query = document.getElementById('searchInput').value.trim().toLowerCase();
-      const containerFilter = document.getElementById('containerSelect').value;
-      const audioFilter = document.getElementById('audioSelect').value;
-      const sortFilter = document.getElementById('sortSelect').value;
-
-      filteredData = archiveData.filter(item => {
-        if (containerFilter !== 'all' && item.container !== containerFilter) return false;
-        if (audioFilter === 'hasAudio' && !item.audioUrl) return false;
-        if (audioFilter === 'pendingAudio' && item.audioUrl) return false;
-
-        if (query) {
-          const searchable = `${item.id} ${item.title} ${item.summary} ${item.subjects.join(' ')} ${item.text}`.toLowerCase();
-          if (query.includes(' and ')) {
-            const terms = query.split(' and ').map(t => t.trim());
-            return terms.every(t => searchable.includes(t));
-          } else if (query.includes(' or ')) {
-            const terms = query.split(' or ').map(t => t.trim());
-            return terms.some(t => searchable.includes(t));
-          } else if (query.startsWith('not ')) {
-            const term = query.replace('not ', '').trim();
-            return !searchable.includes(term);
-          } else {
-            return searchable.includes(query);
-          }
-        }
-        return true;
-      });
-
-      if (sortFilter === 'titleAZ') {
-        filteredData.sort((a, b) => a.title.localeCompare(b.title));
-      } else if (sortFilter === 'titleZA') {
-        filteredData.sort((a, b) => b.title.localeCompare(a.title));
-      } else {
-        filteredData.sort((a, b) => a.id.localeCompare(b.id));
-      }
-
-      renderCards();
-    }
-
-    function openModal(id) {
-      const item = archiveData.find(i => i.id === id);
-      if (!item) return;
-
-      document.getElementById('modalTitle').innerText = item.title;
-      document.getElementById('modalRef').innerText = `${item.id} • ${item.subLocation}`;
-      document.getElementById('modalBody').innerHTML = `
-        <div class="space-y-4 text-zinc-300 text-sm leading-relaxed">
-          ${item.archivistNote ? `
-            <div class="p-3 bg-zinc-950 border border-amber-500/20 rounded text-xs text-amber-200/90 font-mono">
-              <strong>Archivist Note:</strong> ${item.archivistNote}
-            </div>
-          ` : ''}
-          <div class="whitespace-pre-wrap font-serif bg-zinc-950 p-4 border border-zinc-800 rounded">
-            ${item.text || 'No transcript text available.'}
-          </div>
-        </div>
-      `;
-      document.getElementById('textModal').classList.remove('hidden');
-    }
-
-    function closeModal() {
-      document.getElementById('textModal').classList.add('hidden');
-    }
-
-    document.addEventListener('DOMContentLoaded', initArchive);
-  </script>
-</body>
-</html>
+          <div class="flex flex-wrap items-center justify-between gap-3
