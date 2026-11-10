@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>✨ ASTRAL PRISM ARCHIVE ✨</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            wilderness: '#4ade80',
+            underdark: '#a855f7',
+            grymforge: '#f97316',
+            monastery: '#eab308'
+          }
+        }
+      }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #09090b;
+      color: #f4f4f5;
+    }
+    .cinzel {
+      font-family: 'Cinzel', serif;
+    }
+  </style>
+</head>
+<body class="min-h-screen pb-16">
+
+  <!-- Header Section -->
+  <header class="border-b border-amber-500/20 bg-zinc-950/90 sticky top-0 z-40 backdrop-blur-md px-4 py-6 text-center">
+    <div class="max-w-6xl mx-auto">
+      <h1 class="cinzel text-3xl sm:text-5xl font-black tracking-wider text-amber-400 drop-shadow-[0_2px_10px_rgba(251,191,36,0.3)] mb-2">
+        ✨ ASTRAL PRISM ARCHIVE ✨
+      </h1>
+      <p class="text-zinc-400 text-sm sm:text-base max-w-2xl mx-auto mb-4">
+        Faerûn Audio Transcripts, Books, Recipes, Journals, Tomes & Field Records
+      </p>
+      
+      <!-- Act Progress Tracking Badges -->
+      <div class="flex flex-wrap items-center justify-center gap-3 text-xs font-mono">
+        <span class="px-3 py-1 bg-emerald-950/80 text-emerald-400 border border-emerald-500/40 rounded-full font-semibold">
+          ✓ Act I: Completed
+        </span>
+        <span class="px-3 py-1 bg-amber-950/80 text-amber-400 border border-amber-500/40 rounded-full font-semibold animate-pulse">
+          ⏳ Act II: In Progress
+        </span>
+        <span class="px-3 py-1 bg-zinc-900 text-zinc-500 border border-zinc-800 rounded-full font-semibold">
+          🔒 Act III: Coming Soon
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 mt-8 space-y-6">
+
+    <!-- Advanced Library Search Engine -->
+    <section class="bg-zinc-900/90 border border-amber-500/30 rounded-xl p-5 shadow-2xl space-y-4">
+      <div class="flex flex-col sm:flex-row gap-3">
+        <div class="relative flex-1">
+          <input type="text" id="searchInput" onkeyup="executeSearch()" 
+            placeholder="Library Search (e.g. Hag AND Bargain, Necromancy OR Ritual, NOT Cult)..." 
+            class="w-full bg-zinc-950 border border-zinc-700 text-zinc-100 placeholder-zinc-500 px-4 py-3 rounded-lg focus:outline-none focus:border-amber-400 font-mono text-sm">
+        </div>
+        <button onclick="executeSearch()" class="px-6 py-3 bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold rounded-lg text-sm transition-colors cinzel">
+          Search Archive
+        </button>
+      </div>
+
+      <!-- Region Filter Buttons -->
+      <div class="flex flex-wrap items-center gap-2 justify-center sm:justify-start pt-2">
+        <button onclick="filterRegion('all')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/20 border border-amber-500/50 text-amber-300 hover:bg-amber-500/30 transition">
+          ALL RECORDS
+        </button>
+        <button onclick="filterRegion('Wilderness')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-950 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-900/50 transition">
+          🌲 WILDERNESS
+        </button>
+        <button onclick="filterRegion('Underdark')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-purple-950 border border-purple-500/40 text-purple-300 hover:bg-purple-900/50 transition">
+          🍄 UNDERDARK
+        </button>
+        <button onclick="filterRegion('Grymforge')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-orange-950 border border-orange-500/40 text-orange-300 hover:bg-orange-900/50 transition">
+          🔥 GRYMFORGE
+        </button>
+        <button onclick="filterRegion('Rosymorn Monastery')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-yellow-950 border border-yellow-500/40 text-yellow-300 hover:bg-yellow-900/50 transition">
+          ☀️ ROSYMORN MONASTERY
+        </button>
+      </div>
+    </section>
+
+    <!-- Archive Records Card Feed -->
+    <section id="recordsContainer" class="grid grid-cols-1 gap-6">
+      <!-- Dynamic JS Content Injected Here -->
+    </section>
+
+  </main>
+
+  <!-- Reader Pop-Out Modal -->
+  <div id="textModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-zinc-900 border border-amber-500/40 rounded-xl max-w-3xl w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+      <div class="p-4 border-b border-zinc-800 flex items-center justify-between bg-zinc-950">
+        <div>
+          <h3 id="modalTitle" class="cinzel text-lg font-bold text-amber-400">Item Title</h3>
+          <p id="modalRef" class="text-xs font-mono text-zinc-400"></p>
+        </div>
+        <button onclick="closeModal()" class="text-zinc-400 hover:text-amber-400 text-2xl font-bold px-3">
+          &times;
+        </button>
+      </div>
+      <div id="modalBody" class="p-6 overflow-y-auto space-y-4">
+        <!-- Transcript injected dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Master Archive Dataset with Column J Text Transcripts
+    const archiveData = [
+      {
+        id: "ACT1-WILD-01",
+        title: "A Brush with Evil: On Hags",
+        location: "Wilderness",
+        subLocation: "Blighted Village (Cellar / Hag Lair)",
+        coords: "X: 38, Y: 378",
+        quest: "Search the Cellar",
+        format: "Manuscripts",
+        summary: "Operational field guide and folklore study profiling hag biology, illusions, and bargain-making behavior. Warns adventurers against trusting teahouse illusions and accepting deceptive deals.",
+        subjects: ["Hags", "Auntie Ethel", "Fey Creatures", "Deceptive Magic", "Putrid Bog"],
+        text: `Hags are creatures of ancient power and pure malice. They prey upon the innocent, corrupting desire into despair through their dark bargains.
+
+Beware their cravens and covens alike: a single hag is a terrifying opponent, but a coven of three wields magic capable of rending entire lands apart.
+
+Should you encounter one, remember this—never strike a deal, for a hag's mercy is far worse than her cruelty.`,
+        audioUrl: "https://github.com/chelseajones-a11y/astral-prism-archive/raw/refs/heads/main/SCL-BB-04-01_Audio_ABrushWithEvilOnHags.mp3.m4a"
+      },
+      {
+        id: "ACT1-WILD-02",
+        title: "A is For Azuth and Other Gods II",
+        location: "Wilderness",
+        subLocation: "Blighted Village (Schoolhouse)",
+        coords: "X: 18, Y: 432",
+        quest: "Search the Cellar",
+        format: "Manuscripts",
+        summary: "Introductory theological survey documenting divine domains, clerical duties, and pantheon classifications across the Sword Coast. Designed for novice scholars and acolytes.",
+        subjects: ["Theology", "Azuth", "Faerûnian Pantheon", "Divine Domains", "Primer Series"],
+        text: `Azuth, God of Wizards and Arcane Knowledge, holds that magic must be preserved, studied, and taught responsibly.
+
+This volume introduces primary deities of the Sword Coast, outlining sacred tenets, clerical domains, and divine portfolios.`,
+        audioUrl: ""
+      },
+      {
+        id: "ACT1-WILD-03",
+        title: "A Pleasurable Deal",
+        location: "Wilderness",
+        subLocation: "The Risen Road (Tollhouse)",
+        coords: "X: 105, Y: 560",
+        quest: "Hunt the Devil",
+        format: "Manuscripts",
+        summary: "Contractual record and narrative warning concerning devil pacts, bargain terms, and infernal soul transactions along the Sword Coast.",
+        subjects: ["Infernal Pacts", "Devils", "Soul Contracts", "Fiends", "Risen Road"],
+        text: `A pact signed in blood can never be undone by mortal tears. The archdevil Raphael and his kin offer earthly desire in exchange for immortal servitude.
+
+Inspect every clause, for infernal legalese conceals traps deeper than the Nine Hells.`,
+        audioUrl: ""
+      },
+      {
+        id: "ACT1-UD-01",
+        title: "Book of Dead Gods",
+        location: "Underdark",
+        subLocation: "Dank Crypt (Jergal Shrine)",
+        coords: "X: -290, Y: -300",
+        quest: "Explore the Ruins",
+        format: "Manuscripts",
+        summary: "High-mortality theological chronicle cataloging extinct deities, divine fall cycles, and forbidden planar mortality lore discovered deep within Jergal's ancient temple.",
+        subjects: ["Jergal", "Dead Gods", "Eschatology", "Fallen Deities", "Banned Literature"],
+        text: `Names written in faded blood: gods of forgotten ages who faded when mortals ceased to pray.
+
+Jergal records them all, holding the ledger until the end of time itself.`,
+        audioUrl: ""
+      },
+      {
+        id: "ACT1-ROSY-01",
+        title: "Account of the Establishment of Creche Yllek",
+        location: "Rosymorn Monastery",
+        subLocation: "Rosymorn Monastery (Crèche Y'llek)",
+        coords: "X: 72, Y: 140",
+        quest: "Steal a Githyanki Egg",
+        format: "Manuscripts",
+        summary: "Military log detailing the Githyanki conquest of Lathanderian sacred grounds, highlighting the strategic repurposing of Rosymorn Abbey into a martial hatching crèche under Queen Vlaakith's mandate.",
+        subjects: ["Githyanki", "Crèche Yllek", "Rosymorn Monastery", "Vlaakith", "Conquest Logs"],
+        text: `By order of Queen Vlaakith, the Lathanderian retreat of Rosymorn Monastery has been cleansed.
+
+It now serves as Crèche Y'llek, a fortress for breeding warriors untainted by soft surface philosophies.`,
+        audioUrl: ""
+      }
+    ];
+
+    let currentRawData = [...archiveData];
+    let filteredData = [...archiveData];
+
+    function renderCards() {
+      const container = document.getElementById('recordsContainer');
+      if (filteredData.length === 0) {
+        container.innerHTML = `
+          <div class="p-8 text-center bg-zinc-900 border border-zinc-800 rounded-xl">
+            <p class="text-zinc-400 font-mono text-sm">No archive records match your search filter.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filteredData.map((item, index) => {
+        const hasAudio = item.audioUrl && item.audioUrl.trim() !== "";
+        return `
+          <article class="bg-zinc-900/90 border border-zinc-800 hover:border-amber-500/40 rounded-xl p-5 shadow-lg space-y-4">
+            
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-800 pb-3">
+              <div>
+                <span class="text-xs font-mono font-bold text-amber-400 uppercase tracking-widest">${item.id}</span>
+                <span class="text-xs text-zinc-400 ml-2 font-mono">📍 ${item.subLocation} [${item.coords}]</span>
+              </div>
+              <span class="px-2.5 py-0.5 text-[11px] font-mono bg-zinc-800 text-zinc-300 rounded-full border border-zinc-700">
+                ${item.format}
+              </span>
+            </div>
+
+            <h3 class="cinzel text-xl font-bold text-amber-300 tracking-wide">${item.title}</h3>
+
+            <!-- 2-Column Responsive Layout -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              
+              <!-- Left Column: Summary & Audio -->
+              <div class="space-y-3">
+                <div class="p-3 bg-zinc-950/80 border-l-2 border-amber-500 rounded text-zinc-300 italic text-xs leading-relaxed">
+                  ${item.summary}
+                </div>
+
+                ${hasAudio ? `
+                  <div class="p-3 bg-amber-950/30 border border-amber-500/40 rounded-lg space-y-2">
+                    <div class="flex items-center gap-2 text-xs font-mono text-amber-400 font-semibold">
+                      <span>🔊 Raw GitHub Audio Stream</span>
+                    </div>
+                    <audio controls class="w-full h-8">
+                      <source src="${item.audioUrl}" type="audio/mp4">
+                      Your browser does not support audio playback.
+                    </audio>
+                  </div>
+                ` : ''}
+              </div>
+
+              <!-- Right Column: Metadata & Subject Headings -->
+              <div class="space-y-2 font-mono text-xs text-zinc-400 bg-zinc-950/50 p-3 rounded border border-zinc-800/80">
+                <div>
+                  <span class="text-amber-400 font-semibold uppercase">Quest:</span> ${item.quest}
+                </div>
+                <div>
+                  <span class="text-amber-400 font-semibold uppercase">Subjects:</span>
+                  <div class="flex flex-wrap gap-1 mt-1">
+                    ${item.subjects.map(s => `<span class="px-2 py-0.5 bg-zinc-800 text-zinc-300 rounded border border-zinc-700">#${s}</span>`).join('')}
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <div class="flex justify-end pt-2">
+              <button onclick="openModal(${index})" class="px-4 py-2 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 text-amber-300 font-semibold rounded-lg text-xs transition flex items-center gap-2">
+                📖 Read Text
+              </button>
+            </div>
+
+          </article>
+        `;
+      }).join('');
+    }
+
+    function openModal(index) {
+      const item = filteredData[index];
+      document.getElementById('modalTitle').innerText = item.title;
+      document.getElementById('modalRef').innerText = `${item.id} | ${item.subLocation} [${item.coords}]`;
+
+      const modalBody = document.getElementById('modalBody');
+      const transcriptContent = item.text && item.text.trim() !== "" 
+        ? item.text 
+        : "Transcript pending archival transcription.";
+
+      modalBody.innerHTML = `
+        <div class="mb-6 p-4 bg-zinc-950/80 border-l-4 border-amber-500 rounded text-sm text-zinc-300">
+          <h4 class="text-xs uppercase tracking-wider text-amber-400 font-bold mb-1">Narrative Summary</h4>
+          <p class="italic">${item.summary}</p>
+        </div>
+
+        <div class="prose prose-invert max-w-none text-zinc-200 leading-relaxed space-y-4">
+          <div class="flex items-center justify-between mb-2">
+            <h4 class="text-xs uppercase tracking-wider text-zinc-400 font-mono">📜 Text Transcript</h4>
+            <span class="text-xs text-zinc-500 font-mono">Column J Data</span>
+          </div>
+          <div class="p-5 bg-zinc-950 border border-zinc-800 rounded-lg max-h-[55vh] overflow-y-auto font-serif text-sm leading-relaxed whitespace-pre-line text-zinc-300">
+            ${transcriptContent}
+          </div>
+        </div>
+      `;
+
+      document.getElementById('textModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('textModal').classList.add('hidden');
+    }
+
+    function filterRegion(region) {
+      if (region === 'all') {
+        filteredData = [...currentRawData];
+      } else {
+        filteredData = currentRawData.filter(i => i.location === region);
+      }
+      renderCards();
+    }
+
+    function executeSearch() {
+      const query = document.getElementById('searchInput').value.trim();
+      if (!query) {
+        filteredData = [...currentRawData];
+        renderCards();
+        return;
+      }
+
+      filteredData = currentRawData.filter(item => {
+        const fullSearchableContent = `${item.title} ${item.summary} ${(item.subjects || []).join(' ')} ${item.subLocation} ${item.text || ''}`.toLowerCase();
+        
+        if (query.includes(' AND ')) {
+          const terms = query.split(' AND ').map(t => t.trim().toLowerCase());
+          return terms.every(t => fullSearchableContent.includes(t));
+        } else if (query.includes(' OR ')) {
+          const terms = query.split(' OR ').map(t => t.trim().toLowerCase());
+          return terms.some(t => fullSearchableContent.includes(t));
+        } else if (query.startsWith('NOT ')) {
+          const term = query.replace('NOT ', '').trim().toLowerCase();
+          return !fullSearchableContent.includes(term);
+        } else {
+          return fullSearchableContent.includes(query.toLowerCase());
+        }
+      });
+
+      renderCards();
+    }
+
+    // Initial Execution
+    renderCards();
+  </script>
+</body>
+</html>
