@@ -188,33 +188,34 @@
     let showAllVocab = false;
     let selectedLetter = "ALL";
 
-    function initArchive() {
-      let combinedRows = [];
-
-      Papa.parse(RAW_CSV_URL_BB, {
-        download: true,
-        header: true,
-        skipEmptyLines: true,
-        complete: function(resBB) {
-          if (resBB.data) combinedRows.push(...resBB.data);
-
-          Papa.parse(RAW_CSV_URL_BOH, {
-            download: true,
-            header: true,
-            skipEmptyLines: true,
-            complete: function(resBOH) {
-              if (resBOH.data) combinedRows.push(...resBOH.data);
-              processCSVResults(combinedRows);
-            },
-            error: function() {
-              processCSVResults(combinedRows);
-            }
-          });
-        },
-        error: function() {
-          showError("Failed to fetch Google Sheets database. Check publish settings.");
-        }
+    function parseCSVUrl(url) {
+      return new Promise((resolve) => {
+        Papa.parse(url, {
+          download: true,
+          header: true,
+          skipEmptyLines: true,
+          complete: (res) => resolve(res.data || []),
+          error: () => resolve([])
+        });
       });
+    }
+
+    async function initArchive() {
+      try {
+        const [dataBB, dataBOH] = await Promise.all([
+          parseCSVUrl(RAW_CSV_URL_BB),
+          parseCSVUrl(RAW_CSV_URL_BOH)
+        ]);
+        const combinedRows = [...dataBB, ...dataBOH];
+        if (combinedRows.length > 0) {
+          processCSVResults(combinedRows);
+        } else {
+          showError("No collection records found. Please check Google Sheets publishing settings.");
+        }
+      } catch (err) {
+        console.error("Archive initialization error:", err);
+        showError("Failed to fetch database. Verify network connection and sheet URLs.");
+      }
     }
 
     async function processCSVResults(rawData) {
@@ -282,7 +283,6 @@
         return true;
       });
 
-      // Verify audio file existence across both root and /src/ subfolder
       archiveData = await Promise.all(parsedItems.map(async item => {
         if (!item.baseAudioName) return item;
         const resolvedPath = await verifyAudioFile(item.baseAudioName);
@@ -416,4 +416,161 @@
 
             ${item.subjects.length ? `
               <div class="flex flex-wrap gap-1.5 pt-1">
-                ${item.subjects.map(s => `<button onclick="filterBySubject('${s.replace(/'/g, "\\'")}')" class="px-2 py-0.5 bg-zinc-950 text-amber-300/90 hover:text-amber-400 border border-zinc-800 rounded font-mono text-[10
+                ${item.subjects.map(s => `<button onclick="filterBySubject('${s.replace(/'/g, "\\'")}')" class="px-2 py-0.5 bg-zinc-950 text-amber-300/90 hover:text-amber-400 border border-zinc-800 rounded font-mono text-[10px]">#${s}</button>`).join('')}
+              </div>
+            ` : ''}
+
+            <!-- Card Actions & Audio Player Footer -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-3 border-t border-zinc-800/60 text-xs">
+              <div class="flex flex-wrap items-center gap-3">
+                ${item.text ? `
+                  <button onclick="openModal('${item.id}')" class="px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded font-mono transition flex items-center gap-1.5">
+                    📖 Read Transcript
+                  </button>
+                ` : ''}
+                ${item.wikiLink ? `
+                  <a href="${item.wikiLink}" target="_blank" class="text-zinc-400 hover:text-amber-400 font-mono underline flex items-center gap-1">
+                    🔗 BG3 Wiki
+                  </a>
+                ` : ''}
+              </div>
+
+              <!-- Audio Player & Speed Controller -->
+              ${audioUrl ? `
+                <div class="flex flex-col sm:flex-row sm:items-center gap-2 bg-zinc-950 p-2 border border-zinc-800/80 rounded-lg">
+                  <div class="text-[11px] font-mono text-amber-300/90 px-1">
+                    🎙️ <span class="text-zinc-400">Narrator:</span> <strong class="text-amber-400">${item.narrator || 'Chelsea Jones'}</strong>
+                    ${item.duration ? `<span class="text-zinc-500 ml-1">(${item.duration})</span>` : ''}
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <audio id="audio-${item.id}" controls preload="auto" class="h-8 max-w-[200px] sm:max-w-[240px]">
+                      <source src="${audioUrl}" type="${audioUrl.endsWith('.mp3') ? 'audio/mpeg' : 'audio/mp4'}">
+                    </audio>
+                    <select onchange="changeAudioSpeed(this, 'audio-${item.id}')" class="bg-zinc-900 border border-zinc-700 text-amber-400 font-mono text-[10px] px-1.5 py-1 rounded focus:outline-none">
+                      <option value="1" selected>1x</option>
+                      <option value="0.75">0.75x</option>
+                      <option value="1.25">1.25x</option>
+                      <option value="1.5">1.5x</option>
+                      <option value="2">2x</option>
+                    </select>
+                  </div>
+                </div>
+              ` : '<span class="text-zinc-500 font-mono text-[11px]">⏳ Archival Recording Pending</span>'}
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    function executeSearch() {
+      applyFilters();
+    }
+
+    function toggleBooleanGuide() {
+      const panel = document.getElementById('booleanGuidePanel');
+      panel.classList.toggle('hidden');
+    }
+
+    function applySampleQuery(q) {
+      document.getElementById('searchInput').value = q;
+      executeSearch();
+    }
+
+    function filterBySubject(subj) {
+      document.getElementById('searchInput').value = subj;
+      executeSearch();
+    }
+
+    function resetAllFilters() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('containerSelect').value = 'all';
+      document.getElementById('audioSelect').value = 'all';
+      document.getElementById('sortSelect').value = 'id';
+      selectedLetter = "ALL";
+      showAllVocab = false;
+      renderControlledVocabularyBar();
+      applyFilters();
+    }
+
+    function applyFilters() {
+      const query = document.getElementById('searchInput').value.trim().toLowerCase();
+      const rawContainerFilter = document.getElementById('containerSelect').value.toLowerCase();
+      const audioFilter = document.getElementById('audioSelect').value;
+      const sortFilter = document.getElementById('sortSelect').value;
+
+      filteredData = archiveData.filter(item => {
+        if (rawContainerFilter !== 'all') {
+          const itemCont = (item.container || '').toLowerCase();
+          const itemId = (item.id || '').toLowerCase();
+
+          const isBOHSelected = rawContainerFilter.includes('holding') || rawContainerFilter.includes('boh');
+          const isBBSelected  = rawContainerFilter.includes('book') || rawContainerFilter.includes('bb');
+
+          const isItemBOH = itemCont.includes('holding') || itemCont.includes('boh') || itemId.includes('boh');
+          const isItemBB  = itemCont.includes('book') || itemCont.includes('bb') || itemId.includes('-bb-');
+
+          if (isBOHSelected && !isItemBOH) return false;
+          if (isBBSelected && !isItemBB) return false;
+        }
+        
+        if (audioFilter === 'hasAudio' && !item.hasVerifiedAudio) return false;
+        if (audioFilter === 'pendingAudio' && item.hasVerifiedAudio) return false;
+
+        if (query) {
+          const searchable = `${item.id} ${item.title} ${item.summary} ${item.subjects.join(' ')} ${item.text}`.toLowerCase();
+          if (query.includes(' and ')) {
+            const terms = query.split(' and ').map(t => t.trim());
+            return terms.every(t => searchable.includes(t));
+          } else if (query.includes(' or ')) {
+            const terms = query.split(' or ').map(t => t.trim());
+            return terms.some(t => searchable.includes(t));
+          } else if (query.startsWith('not ')) {
+            const term = query.replace('not ', '').trim();
+            return !searchable.includes(term);
+          } else {
+            return searchable.includes(query);
+          }
+        }
+        return true;
+      });
+
+      if (sortFilter === 'titleAZ') {
+        filteredData.sort((a, b) => a.title.localeCompare(b.title));
+      } else if (sortFilter === 'titleZA') {
+        filteredData.sort((a, b) => b.title.localeCompare(a.title));
+      } else {
+        filteredData.sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true, sensitivity: 'base' }));
+      }
+
+      renderCards();
+    }
+
+    function openModal(id) {
+      const item = archiveData.find(i => i.id === id);
+      if (!item) return;
+
+      document.getElementById('modalTitle').innerText = item.title;
+      document.getElementById('modalRef').innerText = `${item.id} • ${item.subLocation}`;
+      document.getElementById('modalBody').innerHTML = `
+        <div class="space-y-4 text-zinc-300 text-sm leading-relaxed">
+          ${item.archivistNote ? `
+            <div class="p-3 bg-zinc-950 border border-amber-500/20 rounded text-xs text-amber-200/90 font-mono">
+              <strong>Archivist Note:</strong> ${item.archivistNote}
+            </div>
+          ` : ''}
+          <div class="whitespace-pre-wrap font-serif bg-zinc-950 p-4 border border-zinc-800 rounded">
+            ${item.text || 'No transcript text available.'}
+          </div>
+        </div>
+      `;
+      document.getElementById('textModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('textModal').classList.add('hidden');
+    }
+
+    document.addEventListener('DOMContentLoaded', initArchive);
+  </script>
+</body>
+</html>
