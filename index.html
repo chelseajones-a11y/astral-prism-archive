@@ -259,7 +259,8 @@
         const rawSubjects = getVal("Controlled_Vocabulary", "Subject_Headings", "Subjects", "Tags") || "";
         const subjects = rawSubjects.split(/;|,/).map(s => s.trim()).filter(Boolean);
 
-        let rawContainer = getVal("Storage_Container", "Container") || row._forceContainer || "";
+        // Explicitly prioritize _forceContainer assigned during fetch
+        let rawContainer = row._forceContainer || getVal("Storage_Container", "Container") || "";
         if (!rawContainer) {
           rawContainer = itemId.toUpperCase().includes("BOH") ? "Bag of Holding" : "Book Bag";
         }
