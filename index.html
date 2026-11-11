@@ -366,8 +366,8 @@
       }
 
       container.innerHTML = filteredData.map(item => {
-        // Fallback raw GitHub link to solve silent playback issues across browsers
-        const rawGithubAudioUrl = item.audioUrl ? item.audioUrl.replace('./', 'https://raw.githubusercontent.com/chelseajones-a11y/astral-prism-archive/main/') : '';
+        const relativeAudioUrl = item.audioUrl;
+        const rawGithubUrl = item.audioUrl ? item.audioUrl.replace('./', 'https://raw.githubusercontent.com/chelseajones-a11y/astral-prism-archive/main/') : '';
 
         return `
           <article class="bg-zinc-900 border border-zinc-800 hover:border-amber-500/40 rounded-xl p-5 transition space-y-4 shadow-lg">
@@ -392,26 +392,35 @@
               </div>
             ` : ''}
 
-            <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-zinc-800/60 text-xs">
-              <div class="flex items-center gap-3">
+            <!-- Card Actions & Audio Player Footer -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-3 border-t border-zinc-800/60 text-xs">
+              <div class="flex flex-wrap items-center gap-3">
                 ${item.text ? `
-                  <button onclick="openModal('${item.id}')" class="px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded font-mono transition">
+                  <button onclick="openModal('${item.id}')" class="px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded font-mono transition flex items-center gap-1.5">
                     📖 Read Transcript
                   </button>
                 ` : ''}
                 ${item.wikiLink ? `
-                  <a href="${item.wikiLink}" target="_blank" class="text-zinc-400 hover:text-amber-400 font-mono underline">
+                  <a href="${item.wikiLink}" target="_blank" class="text-zinc-400 hover:text-amber-400 font-mono underline flex items-center gap-1">
                     🔗 BG3 Wiki
                   </a>
                 ` : ''}
               </div>
+
+              <!-- Audio Player & Narrator Badge -->
               ${item.audioUrl ? `
-                <audio controls preload="metadata" class="h-8 max-w-[220px]">
-                  <source src="${item.audioUrl}" type="audio/mp4">
-                  <source src="${rawGithubAudioUrl}" type="audio/mp4">
-                  <source src="${item.audioUrl}" type="audio/mpeg">
-                </audio>
-              ` : '<span class="text-zinc-500 font-mono text-[11px]">⏳ Audio Pending</span>'}
+                <div class="flex flex-col sm:flex-row sm:items-center gap-2 bg-zinc-950 p-2 border border-zinc-800/80 rounded-lg">
+                  <div class="text-[11px] font-mono text-amber-300/90 px-1">
+                    🎙️ <span class="text-zinc-400">Narrator:</span> <strong class="text-amber-400">${item.narrator || 'Chelsea Jones'}</strong>
+                    ${item.duration ? `<span class="text-zinc-500 ml-1">(${item.duration})</span>` : ''}
+                  </div>
+                  <audio controls preload="auto" class="h-8 max-w-[240px]">
+                    <source src="${relativeAudioUrl}" type='audio/mp4; codecs="mp4a.40.2"'>
+                    <source src="${relativeAudioUrl}" type="audio/x-m4a">
+                    <source src="${rawGithubUrl}" type="audio/mp4">
+                  </audio>
+                </div>
+              ` : '<span class="text-zinc-500 font-mono text-[11px]">⏳ Archival Recording Pending</span>'}
             </div>
           </article>
         `;
