@@ -25,6 +25,10 @@
   <style>
     body { font-family: 'Inter', sans-serif; background-color: #09090b; color: #f4f4f5; }
     .cinzel { font-family: 'Cinzel', serif; }
+    .wax-seal {
+      background: radial-gradient(circle at 30% 30%, #ef4444, #991b1b);
+      box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+    }
   </style>
 </head>
 <body class="min-h-screen pb-16">
@@ -99,13 +103,22 @@
       </div>
 
       <!-- Filters & Sort Controls -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-2 border-t border-zinc-800/80 font-mono text-xs">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2 border-t border-zinc-800/80 font-mono text-xs">
         <div>
           <label class="block text-zinc-400 text-[10px] uppercase tracking-wider mb-1">📦 Storage Container</label>
           <select id="containerSelect" onchange="applyFilters()" class="w-full bg-zinc-950 border border-zinc-700 text-zinc-200 px-3 py-2 rounded focus:outline-none focus:border-amber-400">
             <option value="all">All Storage Containers</option>
             <option value="Book Bag">🎒 Book Bag (BB)</option>
             <option value="Bag of Holding">🧳 Bag of Holding (BOH)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-zinc-400 text-[10px] uppercase tracking-wider mb-1">🚫 Censorship Status (BB)</label>
+          <select id="censoredSelect" onchange="applyFilters()" class="w-full bg-zinc-950 border border-zinc-700 text-zinc-200 px-3 py-2 rounded focus:outline-none focus:border-amber-400">
+            <option value="all">All Censorship Types</option>
+            <option value="censoredOnly">🔴 Censored Records Only</option>
+            <option value="uncensoredOnly">🟢 Uncensored Records Only</option>
           </select>
         </div>
 
@@ -183,7 +196,7 @@
     const RAW_CSV_URL_BB  = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRvHgsh0UiBphbrCs3gOzkpAWxDREwOYG_sR7Kii-7NSq9_VpRjhUDlGNhTyuP3gQ/pub?gid=327381678&single=true&output=csv";
     const RAW_CSV_URL_BOH = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRvHgsh0UiBphbrCs3gOzkpAWxDREwOYG_sR7Kii-7NSq9_VpRjhUDIGNhTyuP3gQ/pub?gid=1506738835&single=true&output=csv";
 
-    // Embedded Bag of Holding Baseline Dataset (Ensures BOH displays regardless of sheets network state)
+    // Embedded Bag of Holding Baseline Dataset
     const EMBEDDED_BOH_DATA = [
       { Item_ID: "SCL-BOH-03-01", Item_Name: "A Warning to the Sword Coast", Doc_Type: "Unbound Document (Anti-Tiefling Pamphlet / Screed)", Doc_Description: "An anti-tiefling screed printed on the cheapest paper...", Audio_Path: "SCL-BOH-03-01_a-warning-to-the-sword-coast_AUDIO.mp3", Duration: "1:36", Voice_Artist: "Sebastian Jones", Narrative_Summary: "An ephemeral xenophobic propaganda leaflet circulating through the Western Heartlands following the Descent of Elturel.", Controlled_Vocabulary: "#Domain:SocialHistory; #Domain:PoliticalPropaganda; #Entity:Tiefling; #Entity:ElturianRefugees; #Faction:ElturelExiles; #Location:SwordCoast; #Location:TheRisenRoad; #Location:BlightedVillage", BG3_Wiki_Link: "https://bg3.wiki/wiki/An_Open_Heresy", Coordinates: "The Risen Road X: 24 Y: 642", _forceContainer: "Bag of Holding" },
       { Item_ID: "SCL-BOH-03-02", Item_Name: "An Open Heresy", Doc_Type: "Unbound Document (Pamphlet)", Doc_Description: "This pamphlet is written in simple, bold script...", Audio_Path: "SCL-BOH-03-02_an-open-heresy_AUDIO.mp3", Duration: "1:28", Voice_Artist: "Chelsea Jones", Narrative_Summary: "A subversive theological pamphlet written in accessible, bold script signed only with an ominous black circle of Shar.", Controlled_Vocabulary: "#Domain:Theology; #Domain:SubversivePropaganda; #Deity:Shar; #Deity:Selune; #Deity:Chauntea; #Faction:SharranEnclave", BG3_Wiki_Link: "https://bg3.wiki/wiki/An_Open_Heresy", Coordinates: "The Risen Road X: 24 Y: 642", _forceContainer: "Bag of Holding" },
@@ -254,7 +267,7 @@
     }
 
     async function processCSVResults(rawData) {
-      const seenIds = new Set();
+      const seenKeys = new Set();
 
       const parsedItems = rawData.map((row, index) => {
         const getVal = (...keys) => {
@@ -288,6 +301,10 @@
         const narrator = getVal("Voice_Artist", "Voice Artist", "Narrator") || "Chelsea Jones";
         const wikiLink = getVal("BG3_Wiki_Link", "Wiki Link", "Link") || "";
 
+        // Censorship field mapping
+        const censorshipRaw = getVal("Censorship_Status", "CensorshipStatus", "Censored", "Censorship") || "";
+        const isCensored = censorshipRaw.toLowerCase().includes("yes") || censorshipRaw.toLowerCase().includes("censored") || censorshipRaw.toLowerCase().includes("true") || censorshipRaw.toLowerCase().includes("red");
+
         const rawSubjects = getVal("Controlled_Vocabulary", "Subject_Headings", "Subjects", "Tags") || "";
         const subjects = rawSubjects.split(/;|,/).map(s => s.trim()).filter(Boolean);
 
@@ -310,11 +327,14 @@
           duration: duration,
           narrator: narrator,
           wikiLink: wikiLink,
+          isCensored: isCensored,
           hasVerifiedAudio: false
         };
       }).filter(item => {
-        if (!item.id || item.id === "RECORD-NaN" || seenIds.has(item.id)) return false;
-        seenIds.add(item.id);
+        // Multi-container unique key deduplication to prevent dropping BOH items
+        const uniqueKey = `${item.container}-${item.id}`;
+        if (!item.id || item.id === "RECORD-NaN" || seenKeys.has(uniqueKey)) return false;
+        seenKeys.add(uniqueKey);
         return true;
       });
 
@@ -433,12 +453,19 @@
         const audioUrl = item.hasVerifiedAudio;
 
         return `
-          <article class="bg-zinc-900 border border-zinc-800 hover:border-amber-500/40 rounded-xl p-5 transition space-y-4 shadow-lg">
+          <article class="bg-zinc-900 border border-zinc-800 hover:border-amber-500/40 rounded-xl p-5 transition space-y-4 shadow-lg relative overflow-hidden">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-zinc-800/80 pb-3">
               <div>
-                <span class="text-xs font-mono text-amber-400 font-bold px-2 py-0.5 bg-amber-950/50 border border-amber-500/30 rounded">
-                  ${item.id}
-                </span>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-mono text-amber-400 font-bold px-2 py-0.5 bg-amber-950/50 border border-amber-500/30 rounded">
+                    ${item.id}
+                  </span>
+                  ${item.isCensored ? `
+                    <span class="wax-seal text-[10px] font-mono text-red-100 font-bold px-2 py-0.5 rounded-full border border-red-400/50 flex items-center gap-1 shadow-md">
+                      🔴 Censored Record
+                    </span>
+                  ` : ''}
+                </div>
                 <h2 class="cinzel text-xl font-bold text-zinc-100 mt-2">${item.title}</h2>
               </div>
               <div class="text-right text-xs font-mono text-zinc-400 space-y-1">
@@ -519,6 +546,7 @@
     function resetAllFilters() {
       document.getElementById('searchInput').value = '';
       document.getElementById('containerSelect').value = 'all';
+      document.getElementById('censoredSelect').value = 'all';
       document.getElementById('audioSelect').value = 'all';
       document.getElementById('sortSelect').value = 'id';
       selectedLetter = "ALL";
@@ -530,10 +558,12 @@
     function applyFilters() {
       const query = document.getElementById('searchInput').value.trim().toLowerCase();
       const rawContainerFilter = document.getElementById('containerSelect').value.toLowerCase();
+      const censoredFilter = document.getElementById('censoredSelect').value;
       const audioFilter = document.getElementById('audioSelect').value;
       const sortFilter = document.getElementById('sortSelect').value;
 
       filteredData = archiveData.filter(item => {
+        // Container Evaluation
         if (rawContainerFilter !== 'all') {
           const itemCont = (item.container || '').toLowerCase();
           const itemId = (item.id || '').toLowerCase();
@@ -547,7 +577,12 @@
           if (isBOHSelected && !isItemBOH) return false;
           if (isBBSelected && !isItemBB) return false;
         }
+
+        // Censorship Evaluation (Applies to BB)
+        if (censoredFilter === 'censoredOnly' && !item.isCensored) return false;
+        if (censoredFilter === 'uncensoredOnly' && item.isCensored) return false;
         
+        // Audio status filter
         if (audioFilter === 'hasAudio' && !item.hasVerifiedAudio) return false;
         if (audioFilter === 'pendingAudio' && item.hasVerifiedAudio) return false;
 
@@ -588,6 +623,11 @@
       document.getElementById('modalRef').innerText = `${item.id} • ${item.subLocation}`;
       document.getElementById('modalBody').innerHTML = `
         <div class="space-y-4 text-zinc-300 text-sm leading-relaxed">
+          ${item.isCensored ? `
+            <div class="p-3 bg-red-950/60 border border-red-500/40 rounded text-xs text-red-200 font-mono flex items-center gap-2">
+              🔴 <strong>Censored Item Notice:</strong> This historical record contains flagged or censored passages under Sword Coast archival guidelines.
+            </div>
+          ` : ''}
           ${item.archivistNote ? `
             <div class="p-3 bg-zinc-950 border border-amber-500/20 rounded text-xs text-amber-200/90 font-mono">
               <strong>Archivist Note:</strong> ${item.archivistNote}
