@@ -102,14 +102,55 @@
         </div>
       </div>
 
+      <!-- PARTY COMPANION READING LIST SELECTOR -->
+      <div class="pt-2 border-t border-zinc-800/80 space-y-2">
+        <div class="flex items-center justify-between">
+          <label class="block text-amber-400 text-[11px] font-mono uppercase tracking-wider font-bold">
+            ⚔️ Party Companion Recommended Reading Lists
+          </label>
+          <button id="clearCompanionBtn" onclick="filterByCompanion(null)" class="hidden text-[10px] font-mono text-zinc-400 hover:text-amber-400 underline">
+            Clear Companion Filter
+          </button>
+        </div>
+        <div class="flex flex-wrap gap-2 font-mono text-xs">
+          <button onclick="filterByCompanion('astarion')" id="btn-astarion" class="px-3 py-1.5 bg-zinc-950 hover:bg-rose-950/50 text-zinc-300 border border-zinc-800 rounded-lg transition flex items-center gap-1.5">
+            🩸 <span>Astarion</span>
+          </button>
+          <button onclick="filterByCompanion('gale')" id="btn-gale" class="px-3 py-1.5 bg-zinc-950 hover:bg-purple-950/50 text-zinc-300 border border-zinc-800 rounded-lg transition flex items-center gap-1.5">
+            🔮 <span>Gale</span>
+          </button>
+          <button onclick="filterByCompanion('shadowheart')" id="btn-shadowheart" class="px-3 py-1.5 bg-zinc-950 hover:bg-slate-800/80 text-zinc-300 border border-zinc-800 rounded-lg transition flex items-center gap-1.5">
+            🗡️ <span>Shadowheart</span>
+          </button>
+          <button onclick="filterByCompanion('laezel')" id="btn-laezel" class="px-3 py-1.5 bg-zinc-950 hover:bg-emerald-950/50 text-zinc-300 border border-zinc-800 rounded-lg transition flex items-center gap-1.5">
+            ⚔️ <span>Lae'zel</span>
+          </button>
+          <button onclick="filterByCompanion('wyll')" id="btn-wyll" class="px-3 py-1.5 bg-zinc-950 hover:bg-amber-950/50 text-zinc-300 border border-zinc-800 rounded-lg transition flex items-center gap-1.5">
+            🛡️ <span>Wyll</span>
+          </button>
+          <button onclick="filterByCompanion('karlach')" id="btn-karlach" class="px-3 py-1.5 bg-zinc-950 hover:bg-red-950/50 text-zinc-300 border border-zinc-800 rounded-lg transition flex items-center gap-1.5">
+            🔥 <span>Karlach</span>
+          </button>
+        </div>
+      </div>
+
       <!-- Filters & Sort Controls -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2 border-t border-zinc-800/80 font-mono text-xs">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-2 border-t border-zinc-800/80 font-mono text-xs">
         <div>
           <label class="block text-zinc-400 text-[10px] uppercase tracking-wider mb-1">📦 Storage Container</label>
           <select id="containerSelect" onchange="applyFilters()" class="w-full bg-zinc-950 border border-zinc-700 text-zinc-200 px-3 py-2 rounded focus:outline-none focus:border-amber-400">
-            <option value="all">All Storage Containers</option>
+            <option value="all">All Containers</option>
             <option value="Book Bag">📦 Book Bag (BB)</option>
             <option value="Bag of Holding">🛍️ Bag of Holding (BOH)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-zinc-400 text-[10px] uppercase tracking-wider mb-1">🎙️ Voice Narrator</label>
+          <select id="narratorSelect" onchange="applyFilters()" class="w-full bg-zinc-950 border border-zinc-700 text-amber-300 font-semibold px-3 py-2 rounded focus:outline-none focus:border-amber-400">
+            <option value="all">All Narrators</option>
+            <option value="Chelsea Jones">Chelsea Jones</option>
+            <option value="Sebastian Jones">Sebastian Jones</option>
           </select>
         </div>
 
@@ -117,8 +158,8 @@
           <label class="block text-zinc-400 text-[10px] uppercase tracking-wider mb-1">🚫 Censorship Status (BB)</label>
           <select id="censoredSelect" onchange="applyFilters()" class="w-full bg-zinc-950 border border-zinc-700 text-zinc-200 px-3 py-2 rounded focus:outline-none focus:border-amber-400">
             <option value="all">All Censorship Types</option>
-            <option value="censoredOnly">🔴 Censored Records Only</option>
-            <option value="uncensoredOnly">🟢 Uncensored Records Only</option>
+            <option value="censoredOnly">🔴 Censored Only</option>
+            <option value="uncensoredOnly">🟢 Uncensored Only</option>
           </select>
         </div>
 
@@ -126,8 +167,8 @@
           <label class="block text-zinc-400 text-[10px] uppercase tracking-wider mb-1">🔊 Audio Stream Status</label>
           <select id="audioSelect" onchange="applyFilters()" class="w-full bg-zinc-950 border border-zinc-700 text-zinc-200 px-3 py-2 rounded focus:outline-none focus:border-amber-400">
             <option value="all">All Media Statuses</option>
-            <option value="hasAudio">🔊 Audio Streaming Available</option>
-            <option value="pendingAudio">⏳ Archival Recording Pending</option>
+            <option value="hasAudio">🔊 Audio Available</option>
+            <option value="pendingAudio">⏳ Pending Audio</option>
           </select>
         </div>
 
@@ -230,10 +271,21 @@
       { Item_ID: "SCL-BOH-03-28", Item_Name: "Regarding Strange Riders in These Parts", Doc_Type: "Unbound Document (Posted Notice)", Doc_Description: "A torn notice suggesting it was once pinned for display.", Audio_Path: "SCL-BOH-03-28_regarding-strange-riders_AUDIO.mp3", Duration: "0:45", Voice_Artist: "Chelsea Jones", Narrative_Summary: "A community warning notice detailing Githyanki patrol sightings around the Chionthar.", Controlled_Vocabulary: "Domain:CommunityNotice; Faction:GithyankiVanguard; Location:TheRisenRoad", BG3_Wiki_Link: "https://bg3.wiki/wiki/Regarding_Strange_Riders_in_These_Parts", Coordinates: "The Risen Road X: 98 Y: 520", _forceContainer: "Bag of Holding" }
     ];
 
+    // Companion Recommended Subject Tags Mapping
+    const COMPANION_TAGS = {
+      astarion: ["Necromancy", "Jergal", "Myrkul", "Satire", "Patriars", "TragicRomance", "Criminology", "InfernalPacts"],
+      gale: ["Mystra", "ArcaneBiology", "IllithidResearch", "ArcaneLore", "NecromancySecrets", "Alchemy", "Lathander"],
+      shadowheart: ["Shar", "Selune", "SharranEnclave", "SubversivePropaganda", "Underdark", "Drow"],
+      laezel: ["Githyanki", "MilitaryStrategy", "TacticalOrders", "Crèche Yllek", "Vlaakith", "GithyankiVanguard"],
+      wyll: ["InfernalPacts", "Zariel", "SwordCoast", "FlamingFist", "Patriars", "BaldursMouth", "TieflingRefugees"],
+      karlach: ["InfernalIron", "InfernalEngineering", "Zariel", "Avernus", "Tiefling", "ElturianRefugees"]
+    };
+
     let archiveData = [];
     let filteredData = [];
     let showAllVocab = false;
     let selectedLetter = "ALL";
+    let selectedCompanion = null;
 
     function parseCSVUrl(url, defaultContainer) {
       return new Promise((resolve) => {
@@ -300,14 +352,17 @@
         const coords = getVal("Location_Coordinates", "X/Y_Coordinates", "Coordinates", "Location") || "Faerûn";
         const rationale = getVal("Archival_Rationale", "Rationale", "Archivist Note") || "";
         const duration = getVal("Duration") || "";
-        const narrator = getVal("Voice_Artist", "Voice Artist", "Narrator") || "Chelsea Jones";
-        const wikiLink = getVal("BG3_Wiki_Link", "Wiki Link", "Link") || "";
+        
+        // Narrator detection: defaults based on asset ID conventions if empty
+        let narrator = getVal("Voice_Artist", "Voice Artist", "Narrator") || "";
+        if (!narrator) {
+          narrator = itemId.includes("BOH") ? "Sebastian Jones" : "Chelsea Jones";
+        }
 
-        // Censorship field mapping
+        const wikiLink = getVal("BG3_Wiki_Link", "Wiki Link", "Link") || "";
         const censorshipRaw = getVal("Censorship_Status", "CensorshipStatus", "Censored", "Censorship") || "";
         const isCensored = censorshipRaw.toLowerCase().includes("yes") || censorshipRaw.toLowerCase().includes("censored") || censorshipRaw.toLowerCase().includes("true") || censorshipRaw.toLowerCase().includes("red");
 
-        // Clean leading hash `#` symbols so tags don't render as `##tag`
         const rawSubjects = getVal("Controlled_Vocabulary", "Subject_Headings", "Subjects", "Tags") || "";
         const subjects = rawSubjects.split(/;|,/).map(s => s.trim().replace(/^#+/, '')).filter(Boolean);
 
@@ -374,14 +429,6 @@
       }
     }
 
-    function showError(msg) {
-      document.getElementById('recordsContainer').innerHTML = `
-        <div class="p-8 text-center bg-red-950/40 border border-red-500/40 rounded-xl text-red-300 font-mono text-sm">
-          ⚠️ ${msg}
-        </div>
-      `;
-    }
-
     function renderControlledVocabularyBar() {
       const vocabContainer = document.getElementById('controlledVocabBar');
       const letterBar = document.getElementById('letterIndexBar');
@@ -438,6 +485,32 @@
     function toggleVocabExpand() {
       showAllVocab = !showAllVocab;
       renderControlledVocabularyBar();
+    }
+
+    function filterByCompanion(companionKey) {
+      selectedCompanion = companionKey;
+      
+      const companions = ["astarion", "gale", "shadowheart", "laezel", "wyll", "karlach"];
+      companions.forEach(c => {
+        const btn = document.getElementById(`btn-${c}`);
+        if (btn) {
+          if (c === companionKey) {
+            btn.classList.add("border-amber-400", "bg-amber-950/60", "text-amber-300", "font-bold");
+            btn.classList.remove("bg-zinc-950", "text-zinc-300");
+          } else {
+            btn.classList.remove("border-amber-400", "bg-amber-950/60", "text-amber-300", "font-bold");
+            btn.classList.add("bg-zinc-950", "text-zinc-300");
+          }
+        }
+      });
+
+      const clearBtn = document.getElementById("clearCompanionBtn");
+      if (clearBtn) {
+        if (companionKey) clearBtn.classList.remove("hidden");
+        else clearBtn.classList.add("hidden");
+      }
+
+      applyFilters();
     }
 
     function renderCards() {
@@ -504,7 +577,7 @@
               ${audioUrl ? `
                 <div class="flex flex-col sm:flex-row sm:items-center gap-2 bg-zinc-950 p-2 border border-zinc-800/80 rounded-lg">
                   <div class="text-[11px] font-mono text-amber-300/90 px-1">
-                    🎙️ <span class="text-zinc-400">Narrator:</span> <strong class="text-amber-400">${item.narrator || 'Chelsea Jones'}</strong>
+                    🎙️ <span class="text-zinc-400">Narrator:</span> <strong class="text-amber-400">${item.narrator}</strong>
                     ${item.duration ? `<span class="text-zinc-500 ml-1">(${item.duration})</span>` : ''}
                   </div>
                   <div class="flex items-center gap-2">
@@ -549,11 +622,13 @@
     function resetAllFilters() {
       document.getElementById('searchInput').value = '';
       document.getElementById('containerSelect').value = 'all';
+      document.getElementById('narratorSelect').value = 'all';
       document.getElementById('censoredSelect').value = 'all';
       document.getElementById('audioSelect').value = 'all';
       document.getElementById('sortSelect').value = 'titleAZ';
       selectedLetter = "ALL";
       showAllVocab = false;
+      filterByCompanion(null);
       renderControlledVocabularyBar();
       applyFilters();
     }
@@ -561,6 +636,7 @@
     function applyFilters() {
       const query = document.getElementById('searchInput').value.trim().toLowerCase();
       const rawContainerFilter = document.getElementById('containerSelect').value.toLowerCase();
+      const narratorFilter = document.getElementById('narratorSelect').value;
       const censoredFilter = document.getElementById('censoredSelect').value;
       const audioFilter = document.getElementById('audioSelect').value;
       const sortFilter = document.getElementById('sortSelect').value;
@@ -581,13 +657,28 @@
           if (isBBSelected && !isItemBB) return false;
         }
 
-        // Censorship Evaluation (Applies to BB)
+        // Narrator Filter
+        if (narratorFilter !== 'all') {
+          if (!item.narrator || !item.narrator.toLowerCase().includes(narratorFilter.toLowerCase())) {
+            return false;
+          }
+        }
+
+        // Censorship Evaluation (BB)
         if (censoredFilter === 'censoredOnly' && !item.isCensored) return false;
         if (censoredFilter === 'uncensoredOnly' && item.isCensored) return false;
         
         // Audio status filter
         if (audioFilter === 'hasAudio' && !item.hasVerifiedAudio) return false;
         if (audioFilter === 'pendingAudio' && item.hasVerifiedAudio) return false;
+
+        // Companion Reading List Filter
+        if (selectedCompanion && COMPANION_TAGS[selectedCompanion]) {
+          const tags = COMPANION_TAGS[selectedCompanion];
+          const itemSearchable = `${item.title} ${item.summary} ${item.subjects.join(' ')} ${item.text}`.toLowerCase();
+          const matchesCompanion = tags.some(tag => itemSearchable.includes(tag.toLowerCase()));
+          if (!matchesCompanion) return false;
+        }
 
         if (query) {
           const searchable = `${item.id} ${item.title} ${item.summary} ${item.subjects.join(' ')} ${item.text}`.toLowerCase();
@@ -607,7 +698,6 @@
         return true;
       });
 
-      // Title cleaner ignoring leading quotes/symbols for accurate alphabetical sorting
       const cleanTitle = (t) => (t || '').replace(/^[^a-zA-Z0-9]+/, '').toLowerCase();
 
       // Advanced sorting modes
