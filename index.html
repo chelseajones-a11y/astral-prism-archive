@@ -225,8 +225,8 @@
       });
     }
 
-    function processCSVResults(rawData) {
-      archiveData = rawData.map((row, index) => {
+    async function processCSVResults(rawData) {
+      const parsedItems = rawData.map((row, index) => {
         const getVal = (...keys) => {
           const rowKeys = Object.keys(row);
           for (let k of keys) {
@@ -240,9 +240,14 @@
         };
 
         const rawAudioPath = getVal("Audio_Path", "AudioPath", "Audio") || "";
-        const baseAudioName = rawAudioPath.replace(/\.(mp3|m4a|wav)$/i, '');
+        const rawItemId = getVal("Item_ID", "ItemID", "ID") || "";
+        
+        let baseAudioName = rawAudioPath.replace(/\.(mp3|m4a|wav)$/i, '');
+        if (!baseAudioName) {
+          baseAudioName = rawItemId.replace(/\.(mp3|m4a|wav)$/i, '');
+        }
 
-        const itemId = baseAudioName || getVal("Item_ID", "ItemID", "ID") || `RECORD-${index + 1}`;
+        const itemId = rawItemId || baseAudioName || `RECORD-${index + 1}`;
         const title = getVal("Item_Name", "ItemName", "Item Name", "Title", "Name") || "Untitled Record";
         const docType = getVal("Doc_Type", "DocType", "Format", "Type") || "Manuscripts";
         const summary = getVal("Narrative_Summary", "Doc_Description", "Description", "Summary") || "";
@@ -272,13 +277,37 @@
           baseAudioName: baseAudioName,
           duration: duration,
           narrator: narrator,
-          wikiLink: wikiLink
+          wikiLink: wikiLink,
+          hasVerifiedAudio: false
         };
       }).filter(item => item.id !== "" || item.title !== "Untitled Record" || item.summary !== "");
+
+      // Verify audio existence across both root and /src/ subfolder
+      archiveData = await Promise.all(parsedItems.map(async item => {
+        if (!item.baseAudioName) return item;
+        const resolvedPath = await verifyAudioFile(item.baseAudioName);
+        return { ...item, hasVerifiedAudio: resolvedPath };
+      }));
 
       filteredData = [...archiveData];
       renderControlledVocabularyBar();
       renderCards();
+    }
+
+    async function verifyAudioFile(baseName) {
+      if (!baseName) return false;
+      const paths = [`./${baseName}`, `./src/${baseName}`];
+      const exts = ['.mp3', '.m4a'];
+
+      for (let p of paths) {
+        for (let e of exts) {
+          try {
+            const res = await fetch(`${p}${e}`, { method: 'HEAD' });
+            if (res.ok) return `${p}${e}`;
+          } catch (err) {}
+        }
+      }
+      return false;
     }
 
     function showError(msg) {
@@ -355,9 +384,7 @@
       }
 
       container.innerHTML = filteredData.map(item => {
-        const baseName = item.baseAudioName;
-        const mp3Url = baseName ? `./${baseName}.mp3` : '';
-        const m4aUrl = baseName ? `./${baseName}.m4a` : '';
+        const audioUrl = item.hasVerifiedAudio;
 
         return `
           <article class="bg-zinc-900 border border-zinc-800 hover:border-amber-500/40 rounded-xl p-5 transition space-y-4 shadow-lg">
@@ -398,15 +425,14 @@
               </div>
 
               <!-- Audio Player & Narrator Badge -->
-              ${baseName ? `
+              ${audioUrl ? `
                 <div class="flex flex-col sm:flex-row sm:items-center gap-2 bg-zinc-950 p-2 border border-zinc-800/80 rounded-lg">
                   <div class="text-[11px] font-mono text-amber-300/90 px-1">
                     🎙️ <span class="text-zinc-400">Narrator:</span> <strong class="text-amber-400">${item.narrator || 'Chelsea Jones'}</strong>
                     ${item.duration ? `<span class="text-zinc-500 ml-1">(${item.duration})</span>` : ''}
                   </div>
                   <audio controls preload="auto" class="h-8 max-w-[240px]">
-                    <source src="${mp3Url}" type="audio/mpeg">
-                    <source src="${m4aUrl}" type="audio/mp4">
+                    <source src="${audioUrl}" type="${audioUrl.endsWith('.mp3') ? 'audio/mpeg' : 'audio/mp4'}">
                   </audio>
                 </div>
               ` : '<span class="text-zinc-500 font-mono text-[11px]">⏳ Archival Recording Pending</span>'}
@@ -454,8 +480,10 @@
 
       filteredData = archiveData.filter(item => {
         if (containerFilter !== 'all' && item.container !== containerFilter) return false;
-        if (audioFilter === 'hasAudio' && !item.baseAudioName) return false;
-        if (audioFilter === 'pendingAudio' && item.baseAudioName) return false;
+        
+        // Strict Audio Stream Status Filtering
+        if (audioFilter === 'hasAudio' && !item.hasVerifiedAudio) return false;
+        if (audioFilter === 'pendingAudio' && item.hasVerifiedAudio) return false;
 
         if (query) {
           const searchable = `${item.id} ${item.title} ${item.summary} ${item.subjects.join(' ')} ${item.text}`.toLowerCase();
