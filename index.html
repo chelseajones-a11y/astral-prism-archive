@@ -240,14 +240,13 @@
         };
 
         const rawAudioPath = getVal("Audio_Path", "AudioPath", "Audio") || "";
-        let audioUrl = "";
+        let audioFileName = "";
 
         if (rawAudioPath) {
           if (rawAudioPath.startsWith("http")) {
-            audioUrl = rawAudioPath;
+            audioFileName = rawAudioPath;
           } else {
-            const cleanPath = rawAudioPath.endsWith(".m4a") ? rawAudioPath : `${rawAudioPath}.m4a`;
-            audioUrl = `./${cleanPath}`;
+            audioFileName = rawAudioPath.endsWith(".m4a") ? rawAudioPath : `${rawAudioPath}.m4a`;
           }
         }
 
@@ -278,7 +277,7 @@
           subjects: subjects,
           archivistNote: rationale,
           text: text,
-          audioUrl: audioUrl,
+          audioFileName: audioFileName,
           duration: duration,
           narrator: narrator,
           wikiLink: wikiLink
@@ -309,7 +308,6 @@
       const sortedSubjects = Array.from(allSubjects).sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
       if (vocabCountEl) vocabCountEl.innerText = sortedSubjects.length;
 
-      // Build A-Z Letter Jump Index
       const letters = ["ALL", "#", ..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"];
       letterBar.innerHTML = letters.map(letter => `
         <button onclick="filterVocabByLetter('${letter}')" 
@@ -318,7 +316,6 @@
         </button>
       `).join('');
 
-      // Filter tags by selected letter
       let activeSubjects = sortedSubjects;
       if (selectedLetter === "#") {
         activeSubjects = sortedSubjects.filter(s => /^[0-9]/.test(s));
@@ -366,8 +363,9 @@
       }
 
       container.innerHTML = filteredData.map(item => {
-        const relativeAudioUrl = item.audioUrl;
-        const rawGithubUrl = item.audioUrl ? item.audioUrl.replace('./', 'https://raw.githubusercontent.com/chelseajones-a11y/astral-prism-archive/main/') : '';
+        const file = item.audioFileName;
+        const rawGithubCdnUrl = file ? (file.startsWith("http") ? file : `https://raw.githubusercontent.com/chelseajones-a11y/astral-prism-archive/main/${file}`) : '';
+        const relativeUrl = file ? (file.startsWith("http") ? file : `./${file}`) : '';
 
         return `
           <article class="bg-zinc-900 border border-zinc-800 hover:border-amber-500/40 rounded-xl p-5 transition space-y-4 shadow-lg">
@@ -408,16 +406,17 @@
               </div>
 
               <!-- Audio Player & Narrator Badge -->
-              ${item.audioUrl ? `
+              ${file ? `
                 <div class="flex flex-col sm:flex-row sm:items-center gap-2 bg-zinc-950 p-2 border border-zinc-800/80 rounded-lg">
                   <div class="text-[11px] font-mono text-amber-300/90 px-1">
                     🎙️ <span class="text-zinc-400">Narrator:</span> <strong class="text-amber-400">${item.narrator || 'Chelsea Jones'}</strong>
                     ${item.duration ? `<span class="text-zinc-500 ml-1">(${item.duration})</span>` : ''}
                   </div>
-                  <audio controls preload="auto" class="h-8 max-w-[240px]">
-                    <source src="${relativeAudioUrl}" type='audio/mp4; codecs="mp4a.40.2"'>
-                    <source src="${relativeAudioUrl}" type="audio/x-m4a">
-                    <source src="${rawGithubUrl}" type="audio/mp4">
+                  <audio controls preload="metadata" crossorigin="anonymous" class="h-8 max-w-[240px]">
+                    <source src="${rawGithubCdnUrl}" type="audio/x-m4a">
+                    <source src="${rawGithubCdnUrl}" type="audio/aac">
+                    <source src="${rawGithubCdnUrl}" type="audio/mp4">
+                    <source src="${relativeUrl}" type="audio/mp4">
                   </audio>
                 </div>
               ` : '<span class="text-zinc-500 font-mono text-[11px]">⏳ Archival Recording Pending</span>'}
@@ -465,8 +464,8 @@
 
       filteredData = archiveData.filter(item => {
         if (containerFilter !== 'all' && item.container !== containerFilter) return false;
-        if (audioFilter === 'hasAudio' && !item.audioUrl) return false;
-        if (audioFilter === 'pendingAudio' && item.audioUrl) return false;
+        if (audioFilter === 'hasAudio' && !item.audioFileName) return false;
+        if (audioFilter === 'pendingAudio' && item.audioFileName) return false;
 
         if (query) {
           const searchable = `${item.id} ${item.title} ${item.summary} ${item.subjects.join(' ')} ${item.text}`.toLowerCase();
