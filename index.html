@@ -134,8 +134,8 @@
         <div>
           <label class="block text-zinc-400 text-[10px] uppercase tracking-wider mb-1">🔤 Sort Order</label>
           <select id="sortSelect" onchange="applyFilters()" class="w-full bg-zinc-950 border border-zinc-700 text-amber-400 font-semibold px-3 py-2 rounded focus:outline-none focus:border-amber-400">
-            <option value="id">Archive ID (Default)</option>
-            <option value="titleAZ">Title (A – Z)</option>
+            <option value="titleAZ" selected>Title (A – Z) [Default]</option>
+            <option value="id">Archive ID</option>
             <option value="titleZA">Title (Z – A)</option>
           </select>
         </div>
@@ -305,7 +305,7 @@
         const censorshipRaw = getVal("Censorship_Status", "CensorshipStatus", "Censored", "Censorship") || "";
         const isCensored = censorshipRaw.toLowerCase().includes("yes") || censorshipRaw.toLowerCase().includes("censored") || censorshipRaw.toLowerCase().includes("true") || censorshipRaw.toLowerCase().includes("red");
 
-        // Clean leading hash `#` symbols so tags don't render as `##tag`
+        // Strip leading hashes `#` so subjects don't render as `##tag`
         const rawSubjects = getVal("Controlled_Vocabulary", "Subject_Headings", "Subjects", "Tags") || "";
         const subjects = rawSubjects.split(/;|,/).map(s => s.trim().replace(/^#+/, '')).filter(Boolean);
 
@@ -346,7 +346,7 @@
 
       filteredData = [...archiveData];
       renderControlledVocabularyBar();
-      renderCards();
+      applyFilters();
     }
 
     async function verifyAudioFile(baseName) {
@@ -548,7 +548,7 @@
       document.getElementById('containerSelect').value = 'all';
       document.getElementById('censoredSelect').value = 'all';
       document.getElementById('audioSelect').value = 'all';
-      document.getElementById('sortSelect').value = 'id';
+      document.getElementById('sortSelect').value = 'titleAZ';
       selectedLetter = "ALL";
       showAllVocab = false;
       renderControlledVocabularyBar();
@@ -604,12 +604,12 @@
         return true;
       });
 
-      if (sortFilter === 'titleAZ') {
-        filteredData.sort((a, b) => a.title.localeCompare(b.title));
+      if (sortFilter === 'id') {
+        filteredData.sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true, sensitivity: 'base' }));
       } else if (sortFilter === 'titleZA') {
         filteredData.sort((a, b) => b.title.localeCompare(a.title));
-      } else {
-        filteredData.sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true, sensitivity: 'base' }));
+      } else { // titleAZ (Default)
+        filteredData.sort((a, b) => a.title.localeCompare(b.title));
       }
 
       renderCards();
