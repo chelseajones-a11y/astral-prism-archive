@@ -282,7 +282,7 @@
         };
       }).filter(item => item.id !== "" || item.title !== "Untitled Record" || item.summary !== "");
 
-      // Verify audio existence across both root and /src/ subfolder
+      // Verify audio file existence across both root and /src/ subfolder
       archiveData = await Promise.all(parsedItems.map(async item => {
         if (!item.baseAudioName) return item;
         const resolvedPath = await verifyAudioFile(item.baseAudioName);
