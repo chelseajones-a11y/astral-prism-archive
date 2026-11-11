@@ -310,6 +310,13 @@
       return false;
     }
 
+    function changeAudioSpeed(selectEl, audioId) {
+      const player = document.getElementById(audioId);
+      if (player) {
+        player.playbackRate = parseFloat(selectEl.value);
+      }
+    }
+
     function showError(msg) {
       document.getElementById('recordsContainer').innerHTML = `
         <div class="p-8 text-center bg-red-950/40 border border-red-500/40 rounded-xl text-red-300 font-mono text-sm">
@@ -339,9 +346,13 @@
 
       let activeSubjects = sortedSubjects;
       if (selectedLetter === "#") {
-        activeSubjects = sortedSubjects.filter(s => /^[0-9]/.test(s));
+        activeSubjects = sortedSubjects.filter(s => 
+          s.split(/\s+/).some(w => /^[0-9]/.test(w))
+        );
       } else if (selectedLetter !== "ALL") {
-        activeSubjects = sortedSubjects.filter(s => s.toUpperCase().startsWith(selectedLetter));
+        activeSubjects = sortedSubjects.filter(s => 
+          s.split(/\s+/).some(w => w.toUpperCase().startsWith(selectedLetter))
+        );
       }
 
       const displaySubjects = showAllVocab ? activeSubjects : activeSubjects.slice(0, 20);
@@ -424,122 +435,14 @@
                 ` : ''}
               </div>
 
-              <!-- Audio Player & Narrator Badge -->
+              <!-- Audio Player & Speed Controller -->
               ${audioUrl ? `
                 <div class="flex flex-col sm:flex-row sm:items-center gap-2 bg-zinc-950 p-2 border border-zinc-800/80 rounded-lg">
                   <div class="text-[11px] font-mono text-amber-300/90 px-1">
-                    🎙️ <span class="text-zinc-400">Narrator:</span> <strong class="text-amber-400">${item.narrator || 'Chelsea Jones'}</strong>
-                    ${item.duration ? `<span class="text-zinc-500 ml-1">(${item.duration})</span>` : ''}
+                    🎙️ <span class="text-zinc-400">Narrator:</span> <strong class="text-amber-400">${item.narrator \vert{}\vert{} 'Chelsea Jones'}</strong>${item.duration ? `<span class="text-zinc-500 ml-1">(${item.duration})</span>` : ''}
                   </div>
-                  <audio controls preload="auto" class="h-8 max-w-[240px]">
-                    <source src="${audioUrl}" type="${audioUrl.endsWith('.mp3') ? 'audio/mpeg' : 'audio/mp4'}">
-                  </audio>
-                </div>
-              ` : '<span class="text-zinc-500 font-mono text-[11px]">⏳ Archival Recording Pending</span>'}
-            </div>
-          </article>
-        `;
-      }).join('');
-    }
-
-    function executeSearch() {
-      applyFilters();
-    }
-
-    function toggleBooleanGuide() {
-      const panel = document.getElementById('booleanGuidePanel');
-      panel.classList.toggle('hidden');
-    }
-
-    function applySampleQuery(q) {
-      document.getElementById('searchInput').value = q;
-      executeSearch();
-    }
-
-    function filterBySubject(subj) {
-      document.getElementById('searchInput').value = subj;
-      executeSearch();
-    }
-
-    function resetAllFilters() {
-      document.getElementById('searchInput').value = '';
-      document.getElementById('containerSelect').value = 'all';
-      document.getElementById('audioSelect').value = 'all';
-      document.getElementById('sortSelect').value = 'id';
-      selectedLetter = "ALL";
-      showAllVocab = false;
-      renderControlledVocabularyBar();
-      applyFilters();
-    }
-
-    function applyFilters() {
-      const query = document.getElementById('searchInput').value.trim().toLowerCase();
-      const containerFilter = document.getElementById('containerSelect').value;
-      const audioFilter = document.getElementById('audioSelect').value;
-      const sortFilter = document.getElementById('sortSelect').value;
-
-      filteredData = archiveData.filter(item => {
-        if (containerFilter !== 'all' && item.container !== containerFilter) return false;
-        
-        // Strict Audio Stream Status Filtering
-        if (audioFilter === 'hasAudio' && !item.hasVerifiedAudio) return false;
-        if (audioFilter === 'pendingAudio' && item.hasVerifiedAudio) return false;
-
-        if (query) {
-          const searchable = `${item.id} ${item.title} ${item.summary} ${item.subjects.join(' ')} ${item.text}`.toLowerCase();
-          if (query.includes(' and ')) {
-            const terms = query.split(' and ').map(t => t.trim());
-            return terms.every(t => searchable.includes(t));
-          } else if (query.includes(' or ')) {
-            const terms = query.split(' or ').map(t => t.trim());
-            return terms.some(t => searchable.includes(t));
-          } else if (query.startsWith('not ')) {
-            const term = query.replace('not ', '').trim();
-            return !searchable.includes(term);
-          } else {
-            return searchable.includes(query);
-          }
-        }
-        return true;
-      });
-
-      if (sortFilter === 'titleAZ') {
-        filteredData.sort((a, b) => a.title.localeCompare(b.title));
-      } else if (sortFilter === 'titleZA') {
-        filteredData.sort((a, b) => b.title.localeCompare(a.title));
-      } else {
-        filteredData.sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true, sensitivity: 'base' }));
-      }
-
-      renderCards();
-    }
-
-    function openModal(id) {
-      const item = archiveData.find(i => i.id === id);
-      if (!item) return;
-
-      document.getElementById('modalTitle').innerText = item.title;
-      document.getElementById('modalRef').innerText = `${item.id} • ${item.subLocation}`;
-      document.getElementById('modalBody').innerHTML = `
-        <div class="space-y-4 text-zinc-300 text-sm leading-relaxed">
-          ${item.archivistNote ? `
-            <div class="p-3 bg-zinc-950 border border-amber-500/20 rounded text-xs text-amber-200/90 font-mono">
-              <strong>Archivist Note:</strong> ${item.archivistNote}
-            </div>
-          ` : ''}
-          <div class="whitespace-pre-wrap font-serif bg-zinc-950 p-4 border border-zinc-800 rounded">
-            ${item.text || 'No transcript text available.'}
-          </div>
-        </div>
-      `;
-      document.getElementById('textModal').classList.remove('hidden');
-    }
-
-    function closeModal() {
-      document.getElementById('textModal').classList.add('hidden');
-    }
-
-    document.addEventListener('DOMContentLoaded', initArchive);
-  </script>
-</body>
-</html>
+                  <div class="flex items-center gap-2">
+                    <audio id="audio-${item.id}" controls preload="auto" class="h-8 max-w-[200px] sm:max-w-[240px]">
+                      <source src="${audioUrl}" type="${audioUrl.endsWith('.mp3') ? 'audio/mpeg' : 'audio/mp4'}">
+                    </audio>
+                    <select onchange="
