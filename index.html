@@ -135,8 +135,10 @@
           <label class="block text-zinc-400 text-[10px] uppercase tracking-wider mb-1">🔤 Sort Order</label>
           <select id="sortSelect" onchange="applyFilters()" class="w-full bg-zinc-950 border border-zinc-700 text-amber-400 font-semibold px-3 py-2 rounded focus:outline-none focus:border-amber-400">
             <option value="titleAZ" selected>Title (A – Z) [Default]</option>
-            <option value="id">Archive ID</option>
             <option value="titleZA">Title (Z – A)</option>
+            <option value="idAsc">Archive ID (Ascending)</option>
+            <option value="idDesc">Archive ID (Descending)</option>
+            <option value="container">Storage Container</option>
           </select>
         </div>
       </div>
@@ -305,7 +307,7 @@
         const censorshipRaw = getVal("Censorship_Status", "CensorshipStatus", "Censored", "Censorship") || "";
         const isCensored = censorshipRaw.toLowerCase().includes("yes") || censorshipRaw.toLowerCase().includes("censored") || censorshipRaw.toLowerCase().includes("true") || censorshipRaw.toLowerCase().includes("red");
 
-        // Strip leading hashes `#` so subjects don't render as `##tag`
+        // Clean leading hash `#` symbols so tags don't render as `##tag`
         const rawSubjects = getVal("Controlled_Vocabulary", "Subject_Headings", "Subjects", "Tags") || "";
         const subjects = rawSubjects.split(/;|,/).map(s => s.trim().replace(/^#+/, '')).filter(Boolean);
 
@@ -605,13 +607,18 @@
         return true;
       });
 
-      // Standardize title cleanup for accurate A-Z sorting (ignore leading non-alphanumeric chars)
+      // Title cleaner ignoring leading quotes/symbols for accurate alphabetical sorting
       const cleanTitle = (t) => (t || '').replace(/^[^a-zA-Z0-9]+/, '').toLowerCase();
 
-      if (sortFilter === 'id') {
+      // Advanced sorting modes
+      if (sortFilter === 'idAsc') {
         filteredData.sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true, sensitivity: 'base' }));
+      } else if (sortFilter === 'idDesc') {
+        filteredData.sort((a, b) => b.id.localeCompare(a.id, undefined, { numeric: true, sensitivity: 'base' }));
       } else if (sortFilter === 'titleZA') {
         filteredData.sort((a, b) => cleanTitle(b.title).localeCompare(cleanTitle(a.title)));
+      } else if (sortFilter === 'container') {
+        filteredData.sort((a, b) => a.container.localeCompare(b.container) || cleanTitle(a.title).localeCompare(cleanTitle(b.title)));
       } else { // titleAZ (Default)
         filteredData.sort((a, b) => cleanTitle(a.title).localeCompare(cleanTitle(b.title)));
       }
