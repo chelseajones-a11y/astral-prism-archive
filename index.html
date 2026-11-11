@@ -188,13 +188,16 @@
     let showAllVocab = false;
     let selectedLetter = "ALL";
 
-    function parseCSVUrl(url) {
+    function parseCSVUrl(url, defaultContainer) {
       return new Promise((resolve) => {
         Papa.parse(url, {
           download: true,
           header: true,
           skipEmptyLines: true,
-          complete: (res) => resolve(res.data || []),
+          complete: (res) => {
+            const rows = (res.data || []).map(row => ({ ...row, _forceContainer: defaultContainer }));
+            resolve(rows);
+          },
           error: () => resolve([])
         });
       });
@@ -203,8 +206,8 @@
     async function initArchive() {
       try {
         const [dataBB, dataBOH] = await Promise.all([
-          parseCSVUrl(RAW_CSV_URL_BB),
-          parseCSVUrl(RAW_CSV_URL_BOH)
+          parseCSVUrl(RAW_CSV_URL_BB, "Book Bag"),
+          parseCSVUrl(RAW_CSV_URL_BOH, "Bag of Holding")
         ]);
         const combinedRows = [...dataBB, ...dataBOH];
         if (combinedRows.length > 0) {
@@ -256,7 +259,7 @@
         const rawSubjects = getVal("Controlled_Vocabulary", "Subject_Headings", "Subjects", "Tags") || "";
         const subjects = rawSubjects.split(/;|,/).map(s => s.trim()).filter(Boolean);
 
-        let rawContainer = getVal("Storage_Container", "Container") || "";
+        let rawContainer = getVal("Storage_Container", "Container") || row._forceContainer || "";
         if (!rawContainer) {
           rawContainer = itemId.toUpperCase().includes("BOH") ? "Bag of Holding" : "Book Bag";
         }
