@@ -240,17 +240,9 @@
         };
 
         const rawAudioPath = getVal("Audio_Path", "AudioPath", "Audio") || "";
-        let audioFileName = "";
+        const baseAudioName = rawAudioPath.replace(/\.(mp3|m4a|wav)$/i, '');
 
-        if (rawAudioPath) {
-          if (rawAudioPath.startsWith("http")) {
-            audioFileName = rawAudioPath;
-          } else {
-            audioFileName = rawAudioPath.endsWith(".m4a") ? rawAudioPath : `${rawAudioPath}.m4a`;
-          }
-        }
-
-        const itemId = rawAudioPath.replace(/\.(mp3|m4a)$/i, '') || getVal("Item_ID", "ItemID", "ID") || `RECORD-${index + 1}`;
+        const itemId = baseAudioName || getVal("Item_ID", "ItemID", "ID") || `RECORD-${index + 1}`;
         const title = getVal("Item_Name", "ItemName", "Item Name", "Title", "Name") || "Untitled Record";
         const docType = getVal("Doc_Type", "DocType", "Format", "Type") || "Manuscripts";
         const summary = getVal("Narrative_Summary", "Doc_Description", "Description", "Summary") || "";
@@ -277,7 +269,7 @@
           subjects: subjects,
           archivistNote: rationale,
           text: text,
-          audioFileName: audioFileName,
+          baseAudioName: baseAudioName,
           duration: duration,
           narrator: narrator,
           wikiLink: wikiLink
@@ -363,8 +355,9 @@
       }
 
       container.innerHTML = filteredData.map(item => {
-        const file = item.audioFileName;
-        const targetUrl = file ? (file.startsWith("http") ? file : `./${file}`) : '';
+        const baseName = item.baseAudioName;
+        const mp3Url = baseName ? `./${baseName}.mp3` : '';
+        const m4aUrl = baseName ? `./${baseName}.m4a` : '';
 
         return `
           <article class="bg-zinc-900 border border-zinc-800 hover:border-amber-500/40 rounded-xl p-5 transition space-y-4 shadow-lg">
@@ -405,14 +398,15 @@
               </div>
 
               <!-- Audio Player & Narrator Badge -->
-              ${file ? `
+              ${baseName ? `
                 <div class="flex flex-col sm:flex-row sm:items-center gap-2 bg-zinc-950 p-2 border border-zinc-800/80 rounded-lg">
                   <div class="text-[11px] font-mono text-amber-300/90 px-1">
                     🎙️ <span class="text-zinc-400">Narrator:</span> <strong class="text-amber-400">${item.narrator || 'Chelsea Jones'}</strong>
                     ${item.duration ? `<span class="text-zinc-500 ml-1">(${item.duration})</span>` : ''}
                   </div>
                   <audio controls preload="auto" class="h-8 max-w-[240px]">
-                    <source src="${targetUrl}">
+                    <source src="${mp3Url}" type="audio/mpeg">
+                    <source src="${m4aUrl}" type="audio/mp4">
                   </audio>
                 </div>
               ` : '<span class="text-zinc-500 font-mono text-[11px]">⏳ Archival Recording Pending</span>'}
@@ -460,8 +454,8 @@
 
       filteredData = archiveData.filter(item => {
         if (containerFilter !== 'all' && item.container !== containerFilter) return false;
-        if (audioFilter === 'hasAudio' && !item.audioFileName) return false;
-        if (audioFilter === 'pendingAudio' && item.audioFileName) return false;
+        if (audioFilter === 'hasAudio' && !item.baseAudioName) return false;
+        if (audioFilter === 'pendingAudio' && item.baseAudioName) return false;
 
         if (query) {
           const searchable = `${item.id} ${item.title} ${item.summary} ${item.subjects.join(' ')} ${item.text}`.toLowerCase();
