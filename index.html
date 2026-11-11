@@ -364,8 +364,7 @@
 
       container.innerHTML = filteredData.map(item => {
         const file = item.audioFileName;
-        const rawGithubCdnUrl = file ? (file.startsWith("http") ? file : `https://raw.githubusercontent.com/chelseajones-a11y/astral-prism-archive/main/${file}`) : '';
-        const relativeUrl = file ? (file.startsWith("http") ? file : `./${file}`) : '';
+        const targetUrl = file ? (file.startsWith("http") ? file : `./${file}`) : '';
 
         return `
           <article class="bg-zinc-900 border border-zinc-800 hover:border-amber-500/40 rounded-xl p-5 transition space-y-4 shadow-lg">
@@ -412,11 +411,8 @@
                     🎙️ <span class="text-zinc-400">Narrator:</span> <strong class="text-amber-400">${item.narrator || 'Chelsea Jones'}</strong>
                     ${item.duration ? `<span class="text-zinc-500 ml-1">(${item.duration})</span>` : ''}
                   </div>
-                  <audio controls preload="metadata" crossorigin="anonymous" class="h-8 max-w-[240px]">
-                    <source src="${rawGithubCdnUrl}" type="audio/x-m4a">
-                    <source src="${rawGithubCdnUrl}" type="audio/aac">
-                    <source src="${rawGithubCdnUrl}" type="audio/mp4">
-                    <source src="${relativeUrl}" type="audio/mp4">
+                  <audio controls preload="auto" class="h-8 max-w-[240px]">
+                    <source src="${targetUrl}">
                   </audio>
                 </div>
               ` : '<span class="text-zinc-500 font-mono text-[11px]">⏳ Archival Recording Pending</span>'}
