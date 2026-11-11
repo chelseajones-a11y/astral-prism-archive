@@ -225,8 +225,8 @@
       });
     }
 
-    function processCSVResults(rawData) {
-      archiveData = rawData.map((row, index) => {
+    async function processCSVResults(rawData) {
+      const parsedItems = rawData.map((row, index) => {
         const getVal = (...keys) => {
           const rowKeys = Object.keys(row);
           for (let k of keys) {
@@ -242,7 +242,6 @@
         const rawAudioPath = getVal("Audio_Path", "AudioPath", "Audio") || "";
         const rawItemId = getVal("Item_ID", "ItemID", "ID") || "";
         
-        // Infer base name cleanly from Audio_Path, falling back to Item_ID
         let baseAudioName = rawAudioPath.replace(/\.(mp3|m4a|wav)$/i, '');
         if (!baseAudioName) {
           baseAudioName = rawItemId.replace(/\.(mp3|m4a|wav)$/i, '');
@@ -278,13 +277,33 @@
           baseAudioName: baseAudioName,
           duration: duration,
           narrator: narrator,
-          wikiLink: wikiLink
+          wikiLink: wikiLink,
+          hasVerifiedAudio: false
         };
       }).filter(item => item.id !== "" || item.title !== "Untitled Record" || item.summary !== "");
+
+      // Verify audio file existence against repository
+      archiveData = await Promise.all(parsedItems.map(async item => {
+        if (!item.baseAudioName) return item;
+        const exists = await verifyAudioFile(item.baseAudioName);
+        return { ...item, hasVerifiedAudio: exists };
+      }));
 
       filteredData = [...archiveData];
       renderControlledVocabularyBar();
       renderCards();
+    }
+
+    async function verifyAudioFile(baseName) {
+      if (!baseName) return false;
+      try {
+        const mp3Res = await fetch(`./${baseName}.mp3`, { method: 'HEAD' });
+        if (mp3Res.ok) return true;
+        const m4aRes = await fetch(`./${baseName}.m4a`, { method: 'HEAD' });
+        return m4aRes.ok;
+      } catch (e) {
+        return false;
+      }
     }
 
     function showError(msg) {
@@ -404,7 +423,7 @@
               </div>
 
               <!-- Audio Player & Narrator Badge -->
-              ${baseName ? `
+              ${item.hasVerifiedAudio ? `
                 <div class="flex flex-col sm:flex-row sm:items-center gap-2 bg-zinc-950 p-2 border border-zinc-800/80 rounded-lg">
                   <div class="text-[11px] font-mono text-amber-300/90 px-1">
                     🎙️ <span class="text-zinc-400">Narrator:</span> <strong class="text-amber-400">${item.narrator || 'Chelsea Jones'}</strong>
@@ -460,8 +479,10 @@
 
       filteredData = archiveData.filter(item => {
         if (containerFilter !== 'all' && item.container !== containerFilter) return false;
-        if (audioFilter === 'hasAudio' && !item.baseAudioName) return false;
-        if (audioFilter === 'pendingAudio' && item.baseAudioName) return false;
+        
+        // Strict Audio Stream Status Filtering
+        if (audioFilter === 'hasAudio' && !item.hasVerifiedAudio) return false;
+        if (audioFilter === 'pendingAudio' && item.hasVerifiedAudio) return false;
 
         if (query) {
           const searchable = `${item.id} ${item.title} ${item.summary} ${item.subjects.join(' ')} ${item.text}`.toLowerCase();
