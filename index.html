@@ -73,8 +73,28 @@
           Execute Search
         </button>
         <button onclick="toggleBooleanGuide()" class="px-4 py-3 bg-zinc-800 hover:bg-zinc-700 text-amber-400 font-mono text-xs rounded-lg border border-zinc-700 transition">
-          ℹ️ Boolean Syntax Guide
+          ℹ️ Syntax Guide
         </button>
+        <button onclick="toggleCollectionGuide()" class="px-4 py-3 bg-zinc-800 hover:bg-zinc-700 text-amber-400 font-mono text-xs rounded-lg border border-zinc-700 transition">
+          📜 Collection Guide
+        </button>
+      </div>
+
+      <!-- Collapsible Collection Difference Guide -->
+      <div id="collectionGuidePanel" class="hidden p-4 bg-zinc-950 border border-amber-500/30 rounded-lg space-y-3 font-mono text-xs text-zinc-300">
+        <div class="border-b border-zinc-800 pb-2">
+          <span class="text-amber-400 font-bold uppercase tracking-wider">📦 Archival Collection Distinction (BB vs. BOH)</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="p-3 bg-zinc-900 border border-zinc-800 rounded space-y-1">
+            <span class="text-amber-300 font-bold">📦 Book Bag Records (SCL-BB)</span>
+            <p class="text-zinc-400 text-[11px]">Contains formal bound volumes, historical texts, scholarly tomies, and censored regional literature cataloged under official Sword Coast archival oversight.</p>
+          </div>
+          <div class="p-3 bg-zinc-900 border border-zinc-800 rounded space-y-1">
+            <span class="text-amber-300 font-bold">🛍️ Bag of Holding Records (SCL-BOH)</span>
+            <p class="text-zinc-400 text-[11px]">Contains loose ephemera, personal correspondence, battlefield dispatches, warning notices, and unedited field notes recovered across Faerûn.</p>
+          </div>
+        </div>
       </div>
 
       <!-- Collapsible Boolean Syntax Helper Panel -->
@@ -102,19 +122,22 @@
         </div>
       </div>
 
-      <!-- PARTY COMPANION READING LIST SELECTOR -->
+      <!-- PARTY COMPANION & ORIGIN READING LIST SELECTOR -->
       <div class="pt-2 border-t border-zinc-800/80 space-y-2">
         <div class="flex items-center justify-between">
           <label class="block text-amber-400 text-[11px] font-mono uppercase tracking-wider font-bold">
-            ⚔️ Party Companion Recommended Reading Lists
+            ⚔️ Origin & Companion Recommended Reading Lists
           </label>
           <button id="clearCompanionBtn" onclick="filterByCompanion(null)" class="hidden text-[10px] font-mono text-zinc-400 hover:text-amber-400 underline">
             Clear Companion Filter
           </button>
         </div>
         <div class="flex flex-wrap gap-2 font-mono text-xs">
+          <button onclick="filterByCompanion('darkurge')" id="btn-darkurge" class="px-3 py-1.5 bg-zinc-950 hover:bg-red-950/70 text-zinc-300 border border-red-900/50 rounded-lg transition flex items-center gap-1.5">
+            🩸 <span class="text-red-400 font-bold">Dark Urge</span>
+          </button>
           <button onclick="filterByCompanion('astarion')" id="btn-astarion" class="px-3 py-1.5 bg-zinc-950 hover:bg-rose-950/50 text-zinc-300 border border-zinc-800 rounded-lg transition flex items-center gap-1.5">
-            🩸 <span>Astarion</span>
+            🍷 <span>Astarion</span>
           </button>
           <button onclick="filterByCompanion('gale')" id="btn-gale" class="px-3 py-1.5 bg-zinc-950 hover:bg-purple-950/50 text-zinc-300 border border-zinc-800 rounded-lg transition flex items-center gap-1.5">
             🔮 <span>Gale</span>
@@ -135,16 +158,7 @@
       </div>
 
       <!-- Filters & Sort Controls -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-2 border-t border-zinc-800/80 font-mono text-xs">
-        <div>
-          <label class="block text-zinc-400 text-[10px] uppercase tracking-wider mb-1">📦 Storage Container</label>
-          <select id="containerSelect" onchange="applyFilters()" class="w-full bg-zinc-950 border border-zinc-700 text-zinc-200 px-3 py-2 rounded focus:outline-none focus:border-amber-400">
-            <option value="all">All Containers</option>
-            <option value="Book Bag">📦 Book Bag (BB)</option>
-            <option value="Bag of Holding">🛍️ Bag of Holding (BOH)</option>
-          </select>
-        </div>
-
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2 border-t border-zinc-800/80 font-mono text-xs">
         <div>
           <label class="block text-zinc-400 text-[10px] uppercase tracking-wider mb-1">🎙️ Voice Narrator</label>
           <select id="narratorSelect" onchange="applyFilters()" class="w-full bg-zinc-950 border border-zinc-700 text-amber-300 font-semibold px-3 py-2 rounded focus:outline-none focus:border-amber-400">
@@ -155,7 +169,7 @@
         </div>
 
         <div>
-          <label class="block text-zinc-400 text-[10px] uppercase tracking-wider mb-1">🚫 Censorship Status (BB)</label>
+          <label class="block text-zinc-400 text-[10px] uppercase tracking-wider mb-1">🚫 Censorship Status</label>
           <select id="censoredSelect" onchange="applyFilters()" class="w-full bg-zinc-950 border border-zinc-700 text-zinc-200 px-3 py-2 rounded focus:outline-none focus:border-amber-400">
             <option value="all">All Censorship Types</option>
             <option value="censoredOnly">🔴 Censored Only</option>
@@ -179,7 +193,6 @@
             <option value="titleZA">Title (Z – A)</option>
             <option value="idAsc">Archive ID (Ascending)</option>
             <option value="idDesc">Archive ID (Descending)</option>
-            <option value="container">Storage Container</option>
           </select>
         </div>
       </div>
@@ -211,7 +224,7 @@
     <!-- Records Feed -->
     <section id="recordsContainer" class="grid grid-cols-1 gap-6">
       <div class="p-8 text-center bg-zinc-900 border border-zinc-800 rounded-xl font-mono text-sm text-amber-400 animate-pulse">
-        ⏳ Fetching live collection records from Google Sheets...
+        ⏳ Loading unified Faerûn archival records...
       </div>
     </section>
 
@@ -239,23 +252,9 @@
     const RAW_CSV_URL_BB  = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRvHgsh0UiBphbrCs3gOzkpAWxDREwOYG_sR7Kii-7NSq9_VpRjhUDlGNhTyuP3gQ/pub?gid=327381678&single=true&output=csv";
     const RAW_CSV_URL_BOH = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRvHgsh0UiBphbrCs3gOzkpAWxDREwOYG_sR7Kii-7NSq9_VpRjhUDIGNhTyuP3gQ/pub?gid=1506738835&single=true&output=csv";
 
-    // Fallback Bag of Holding Records
-    const EMBEDDED_BOH_DATA = [
-      { Item_ID: "SCL-BOH-03-01", Item_Name: "A Warning to the Sword Coast", Doc_Type: "Unbound Document (Anti-Tiefling Pamphlet / Screed)", Doc_Description: "An anti-tiefling screed printed on the cheapest paper...", Audio_Path: "SCL-BOH-03-01_a-warning-to-the-sword-coast_AUDIO.mp3", Duration: "1:36", Voice_Artist: "Sebastian Jones", Narrative_Summary: "An ephemeral xenophobic propaganda leaflet circulating through the Western Heartlands following the Descent of Elturel.", Controlled_Vocabulary: "Domain:SocialHistory; Domain:PoliticalPropaganda; Entity:Tiefling; Entity:ElturianRefugees; Faction:ElturelExiles; Location:SwordCoast; Location:TheRisenRoad; Location:BlightedVillage; Target:Karlach; Target:Wyll", BG3_Wiki_Link: "https://bg3.wiki/wiki/An_Open_Heresy", Coordinates: "The Risen Road X: 24 Y: 642", _forceContainer: "Bag of Holding" },
-      { Item_ID: "SCL-BOH-03-02", Item_Name: "An Open Heresy", Doc_Type: "Unbound Document (Pamphlet)", Doc_Description: "This pamphlet is written in simple, bold script...", Audio_Path: "SCL-BOH-03-02_an-open-heresy_AUDIO.mp3", Duration: "1:28", Voice_Artist: "Chelsea Jones", Narrative_Summary: "A subversive theological pamphlet written in accessible, bold script signed only with an ominous black circle of Shar.", Controlled_Vocabulary: "Domain:Theology; Domain:SubversivePropaganda; Deity:Shar; Deity:Selune; Deity:Chauntea; Faction:SharranEnclave; Target:Shadowheart", BG3_Wiki_Link: "https://bg3.wiki/wiki/An_Open_Heresy", Coordinates: "The Risen Road X: 24 Y: 642", _forceContainer: "Bag of Holding" },
-      { Item_ID: "SCL-BOH-03-03", Item_Name: "An Open Letter on Oppression and Peacocks", Doc_Type: "Unbound Document (Letter to the Editor)", Doc_Description: "Baldur's Bash is printed in bright, bold letters...", Audio_Path: "SCL-BOH-03-03_an-open-letter-on-oppression-and-peacocks_AUDIO.mp3", Duration: "1:12", Voice_Artist: "Sebastian Jones", Narrative_Summary: "A satirical editorial letter published in the Baldurian tabloid Baldur's Bash, critiquing class divides.", Controlled_Vocabulary: "Domain:SocioPolitics; Domain:Journalism; Domain:Satire; Faction:Patriars; Faction:BaldursMouth; Target:Wyll", BG3_Wiki_Link: "https://bg3.wiki/wiki/An_Open_Letter_on_Oppression_and_Peacocks", Coordinates: "Risen Road at X: 8 Y: 547", _forceContainer: "Bag of Holding" },
-      { Item_ID: "SCL-BOH-03-04", Item_Name: "Inventory of Offerings", Doc_Type: "Unbound Document (Note)", Doc_Description: "A plain, unadorned note.", Audio_Path: "SCL-BOH-03-04_inventory-of-offerings_AUDIO.mp3", Duration: "0:08", Voice_Artist: "Chelsea Jones", Narrative_Summary: "A concise ledger note detailing ceremonial offerings at Rosymorn Monastery prior to its fall.", Controlled_Vocabulary: "Domain:Theology; Domain:MonasticAdministration; Deity:Lathander; Faction:OrderOfTheSunSoul; Target:Laezel", BG3_Wiki_Link: "https://bg3.wiki/wiki/Inventory_of_Offerings", Coordinates: "Rosymorn Monastery X: 106 Y: 44", _forceContainer: "Bag of Holding" },
-      { Item_ID: "SCL-BOH-03-05", Item_Name: "Blacksmith's Note", Doc_Type: "Unbound Document (Note)", Doc_Description: "A blacksmith's brief report on an unusual metal...", Audio_Path: "SCL-BOH-03-05_blacksmiths-note_AUDIO.mp3", Duration: "0:32", Voice_Artist: "Sebastian Jones", Narrative_Summary: "A practitioner's technical report authored by a village smith describing Infernal Iron.", Controlled_Vocabulary: "Domain:Metallurgy; Domain:InfernalEngineering; Location:BlightedVillage; Item:InfernalIron; Target:Karlach", BG3_Wiki_Link: "https://bg3.wiki/wiki/Blacksmith%27s_Note", Coordinates: "Blighted Village at X: -434 Y: -370", _forceContainer: "Bag of Holding" },
-      { Item_ID: "SCL-BOH-03-06", Item_Name: "Ancient Scroll", Doc_Type: "Unbound Document (Scroll)", Doc_Description: "A mouldering scroll, containing ancient ritual fragments.", Audio_Path: "SCL-BOH-03-06_ancient-scroll_AUDIO.mp3", Duration: "0:35", Voice_Artist: "Chelsea Jones", Narrative_Summary: "A fragment of a mouldering necromantic scroll recovered from the Refectory ruins.", Controlled_Vocabulary: "Domain:Theology; Domain:Archaeology; Domain:Necromancy; Deity:Jergal; Deity:Myrkul; Target:Shadowheart; Target:Astarion", BG3_Wiki_Link: "https://bg3.wiki/wiki/Ancient_Scroll", Coordinates: "Refectory at X: -189 Y: -313", _forceContainer: "Bag of Holding" },
-      { Item_ID: "SCL-BOH-03-07", Item_Name: "Case File #846", Doc_Type: "Unbound Document (Court Record)", Doc_Description: "A rough copy of a court recording in faded ink.", Audio_Path: "SCL-BOH-03-07_case-file-846_AUDIO.mp3", Duration: "0:47", Voice_Artist: "Sebastian Jones", Narrative_Summary: "A faded legal transcript detailing court proceedings regarding dark cultist factions.", Controlled_Vocabulary: "Domain:Jurisprudence; Domain:Criminology; Faction:FlamingFist; Faction:CultOfTheDeadThree; Target:Astarion; Target:Gale", BG3_Wiki_Link: "https://bg3.wiki/wiki/Case_File_846#846", Coordinates: "Waukeen's Rest at X: -48 Y: 619", _forceContainer: "Bag of Holding" },
-      { Item_ID: "SCL-BOH-03-08", Item_Name: "Creased Page", Doc_Type: "Unbound Document (Prayer / Note)", Doc_Description: "A worn scrap of paper, folded tightly.", Audio_Path: "SCL-BOH-03-08_creased-page_AUDIO.mp3", Duration: "0:21", Voice_Artist: "Chelsea Jones", Narrative_Summary: "A tightly folded scrap containing a private devotional prayer found on a corpse in the Underdark.", Controlled_Vocabulary: "Domain:Theology; Domain:PersonalNarrative; Entity:Drow; Location:Underdark", BG3_Wiki_Link: "https://bg3.wiki/wiki/Creased_Page", Coordinates: "Underdark X: 82 Y: -206", _forceContainer: "Bag of Holding" },
-      { Item_ID: "SCL-BOH-03-09", Item_Name: "Curled Paper", Doc_Type: "Unbound Document (Message in a Bottle)", Doc_Description: "A note written in a childish hand.", Audio_Path: "SCL-BOH-03-09_curled-paper_AUDIO.mp3", Duration: "0:32", Voice_Artist: "Chelsea Jones", Narrative_Summary: "A personal message written in a childish hand, found sealed in a bottle near Festering Cove.", Controlled_Vocabulary: "Domain:SocialHistory; Domain:PersonalEpistle; Entity:Tiefling; Entity:ElturianRefugees; Target:Karlach", BG3_Wiki_Link: "https://bg3.wiki/wiki/Curled_Paper", Coordinates: "Festering Cove at X: -392 Y: 264", _forceContainer: "Bag of Holding" },
-      { Item_ID: "SCL-BOH-03-10", Item_Name: "Drow's Letter", Doc_Type: "Unbound Document (Orders / Letter)", Doc_Description: "Orders taken from the body of a drow scout.", Audio_Path: "SCL-BOH-03-10_drows-letter_AUDIO.mp3", Duration: "0:19", Voice_Artist: "Chelsea Jones", Narrative_Summary: "Tactical field orders recovered from a drow scout operating under Nightsong-hunting directives.", Controlled_Vocabulary: "Domain:MilitaryStrategy; Domain:TacticalOrders; Entity:Drow; Faction:CultOfTheAbsolute", BG3_Wiki_Link: "https://bg3.wiki/wiki/Drow%27s_Letter", Coordinates: "Enclave Library X: -444 Y: 15", _forceContainer: "Bag of Holding" },
-      { Item_ID: "SCL-BOH-03-54", Item_Name: "Map of Moonhaven", Doc_Type: "Map / Tactical Document", Doc_Description: "This ancient map is faded, but the detailed outline of Moonhaven is still clearly visible.", Examine_Path: "SCL-BOH-03-54_map-of-moonhaven_EXAMINE.png", Full_Doc_Path: "SCL-BOH-03-54_map-of-moonhaven_DOC.png", Audio_Path: "SCL-BOH-03-54_map-of-moonhaven_AUDIO.mp3", Duration: "0:11", Voice_Artist: "Chelsea Jones", Narrative_Summary: "An ancient map detailing Moonhaven settlement layout and entry points.", Controlled_Vocabulary: "Domain:HistoricalCartography; Domain:MilitaryStrategy; Location:Moonhaven; Location:BlightedVillage", BG3_Wiki_Link: "https://bg3.wiki/wiki/Map_of_Moonhaven", Coordinates: "Abandoned Refuge X: -611 Y: 344", _forceContainer: "Bag of Holding" }
-    ];
-
-    // Companion Recommended Subject Tags Mapping
+    // Companion & Origin Recommended Subject Tags Mapping
     const COMPANION_TAGS = {
+      darkurge: ["Bhaal", "Bhaalspawn", "CultOfTheDeadThree", "Sacrifice", "BloodRitual", "Murder", "DeathThree", "Bhaalist", "DarkRitualSchema"],
       astarion: ["Necromancy", "Jergal", "Myrkul", "Satire", "Patriars", "TragicRomance", "Criminology", "InfernalPacts"],
       gale: ["Mystra", "ArcaneBiology", "IllithidResearch", "ArcaneLore", "NecromancySecrets", "Alchemy", "Lathander"],
       shadowheart: ["Shar", "Selune", "SharranEnclave", "SubversivePropaganda", "Underdark", "Drow", "HistoricalCartography"],
@@ -263,6 +262,14 @@
       wyll: ["InfernalPacts", "Zariel", "SwordCoast", "FlamingFist", "Patriars", "BaldursMouth", "TieflingRefugees"],
       karlach: ["InfernalIron", "InfernalEngineering", "Zariel", "Avernus", "Tiefling", "ElturianRefugees"]
     };
+
+    // Full Baseline Embedded Master Dataset
+    const EMBEDDED_MASTER_DATA = [
+      { Item_ID: "SCL-BOH-03-01", Item_Name: "A Warning to the Sword Coast", Doc_Type: "Unbound Document (Anti-Tiefling Pamphlet)", Doc_Description: "An anti-tiefling screed printed on cheap paper.", Audio_Path: "SCL-BOH-03-01_a-warning-to-the-sword-coast_AUDIO.mp3", Duration: "1:36", Voice_Artist: "Sebastian Jones", Narrative_Summary: "An ephemeral xenophobic propaganda leaflet circulating after the Descent of Elturel.", Controlled_Vocabulary: "Domain:SocialHistory; Domain:PoliticalPropaganda; Entity:Tiefling; Entity:ElturianRefugees; Target:Karlach; Target:Wyll", BG3_Wiki_Link: "https://bg3.wiki/wiki/An_Open_Heresy", Coordinates: "The Risen Road X: 24 Y: 642", _forceContainer: "Bag of Holding" },
+      { Item_ID: "SCL-BOH-03-02", Item_Name: "An Open Heresy", Doc_Type: "Unbound Document (Pamphlet)", Doc_Description: "This pamphlet is written in bold script...", Audio_Path: "SCL-BOH-03-02_an-open-heresy_AUDIO.mp3", Duration: "1:28", Voice_Artist: "Chelsea Jones", Narrative_Summary: "A subversive theological pamphlet signed only with a black circle of Shar.", Controlled_Vocabulary: "Domain:Theology; Domain:SubversivePropaganda; Deity:Shar; Deity:Selune; Target:Shadowheart", BG3_Wiki_Link: "https://bg3.wiki/wiki/An_Open_Heresy", Coordinates: "The Risen Road X: 24 Y: 642", _forceContainer: "Bag of Holding" },
+      { Item_ID: "SCL-BOH-03-54", Item_Name: "Map of Moonhaven", Doc_Type: "Map / Tactical Document", Doc_Description: "This ancient map is faded, but details of Moonhaven are visible.", Examine_Path: "SCL-BOH-03-54_map-of-moonhaven_EXAMINE.png", Full_Doc_Path: "SCL-BOH-03-54_map-of-moonhaven_DOC.png", Audio_Path: "SCL-BOH-03-54_map-of-moonhaven_AUDIO.mp3", Duration: "0:11", Voice_Artist: "Chelsea Jones", Narrative_Summary: "An ancient map outlining the settlement of Moonhaven (Blighted Village).", Controlled_Vocabulary: "Domain:HistoricalCartography; Domain:MilitaryStrategy; Location:Moonhaven; Location:BlightedVillage; Target:Shadowheart", BG3_Wiki_Link: "https://bg3.wiki/wiki/Map_of_Moonhaven", Coordinates: "Abandoned Refuge X: -611 Y: 344", _forceContainer: "Bag of Holding" },
+      { Item_ID: "SCL-BOH-03-57", Item_Name: "Dark Ritual Schema", Doc_Type: "Unbound Document (Ritual Diagram)", Doc_Description: "Blood-drawn diagrams outlining a sacrificial circle.", Audio_Path: "SCL-BOH-03-57_dark-ritual-schema_AUDIO.mp3", Duration: "0:45", Voice_Artist: "Chelsea Jones", Narrative_Summary: "A sinister schematic detailing ritual blood sacrifice dedicated to Bhaal.", Controlled_Vocabulary: "Domain:Theology; Domain:Necromancy; Deity:Bhaal; Faction:CultOfTheDeadThree; Target:Bhaalspawn; Target:DarkUrge", BG3_Wiki_Link: "https://bg3.wiki/wiki/Dark_Ritual_Schema", Coordinates: "Refectory X: -195 Y: -305", _forceContainer: "Bag of Holding" }
+    ];
 
     let archiveData = [];
     let filteredData = [];
@@ -302,14 +309,16 @@
           fetchAndParseCSV(RAW_CSV_URL_BOH, "Bag of Holding")
         ]);
 
-        if (!dataBOH || dataBOH.length === 0) {
-          dataBOH = EMBEDDED_BOH_DATA;
+        let combined = [...dataBB, ...dataBOH];
+
+        // If fetch returns empty, fall back seamlessly
+        if (combined.length === 0) {
+          combined = EMBEDDED_MASTER_DATA;
         }
 
-        const combinedRows = [...dataBB, ...dataBOH];
-        processCSVResults(combinedRows);
+        processCSVResults(combined);
       } catch (err) {
-        processCSVResults(EMBEDDED_BOH_DATA);
+        processCSVResults(EMBEDDED_MASTER_DATA);
       }
     }
 
@@ -492,10 +501,20 @@
       renderControlledVocabularyBar();
     }
 
+    function toggleCollectionGuide() {
+      const panel = document.getElementById('collectionGuidePanel');
+      panel.classList.toggle('hidden');
+    }
+
+    function toggleBooleanGuide() {
+      const panel = document.getElementById('booleanGuidePanel');
+      panel.classList.toggle('hidden');
+    }
+
     function filterByCompanion(companionKey) {
       selectedCompanion = companionKey;
       
-      const companions = ["astarion", "gale", "shadowheart", "laezel", "wyll", "karlach"];
+      const companions = ["darkurge", "astarion", "gale", "shadowheart", "laezel", "wyll", "karlach"];
       companions.forEach(c => {
         const btn = document.getElementById(`btn-${c}`);
         if (btn) {
@@ -609,11 +628,6 @@
       applyFilters();
     }
 
-    function toggleBooleanGuide() {
-      const panel = document.getElementById('booleanGuidePanel');
-      panel.classList.toggle('hidden');
-    }
-
     function applySampleQuery(q) {
       document.getElementById('searchInput').value = q;
       executeSearch();
@@ -626,7 +640,6 @@
 
     function resetAllFilters() {
       document.getElementById('searchInput').value = '';
-      document.getElementById('containerSelect').value = 'all';
       document.getElementById('narratorSelect').value = 'all';
       document.getElementById('censoredSelect').value = 'all';
       document.getElementById('audioSelect').value = 'all';
@@ -640,28 +653,12 @@
 
     function applyFilters() {
       const query = document.getElementById('searchInput').value.trim().toLowerCase();
-      const rawContainerFilter = document.getElementById('containerSelect').value.toLowerCase();
       const narratorFilter = document.getElementById('narratorSelect').value;
       const censoredFilter = document.getElementById('censoredSelect').value;
       const audioFilter = document.getElementById('audioSelect').value;
       const sortFilter = document.getElementById('sortSelect').value;
 
       filteredData = archiveData.filter(item => {
-        // Container Evaluation
-        if (rawContainerFilter !== 'all') {
-          const itemCont = (item.container || '').toLowerCase();
-          const itemId = (item.id || '').toLowerCase();
-
-          const isBOHSelected = rawContainerFilter.includes('holding') || rawContainerFilter.includes('boh');
-          const isBBSelected  = rawContainerFilter.includes('book') || rawContainerFilter.includes('bb');
-
-          const isItemBOH = itemCont.includes('holding') || itemCont.includes('boh') || itemId.includes('boh');
-          const isItemBB  = itemCont.includes('book') || itemCont.includes('bb') || itemId.includes('-bb-');
-
-          if (isBOHSelected && !isItemBOH) return false;
-          if (isBBSelected && !isItemBB) return false;
-        }
-
         // Narrator Filter
         if (narratorFilter !== 'all') {
           if (!item.narrator || !item.narrator.toLowerCase().includes(narratorFilter.toLowerCase())) {
@@ -669,7 +666,7 @@
           }
         }
 
-        // Censorship Evaluation (BB)
+        // Censorship Evaluation
         if (censoredFilter === 'censoredOnly' && !item.isCensored) return false;
         if (censoredFilter === 'uncensoredOnly' && item.isCensored) return false;
         
@@ -712,8 +709,6 @@
         filteredData.sort((a, b) => b.id.localeCompare(a.id, undefined, { numeric: true, sensitivity: 'base' }));
       } else if (sortFilter === 'titleZA') {
         filteredData.sort((a, b) => cleanTitle(b.title).localeCompare(cleanTitle(a.title)));
-      } else if (sortFilter === 'container') {
-        filteredData.sort((a, b) => a.container.localeCompare(b.container) || cleanTitle(a.title).localeCompare(cleanTitle(b.title)));
       } else { // titleAZ (Default)
         filteredData.sort((a, b) => cleanTitle(a.title).localeCompare(cleanTitle(b.title)));
       }
