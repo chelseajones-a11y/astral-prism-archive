@@ -326,13 +326,102 @@
     const STORAGE_KEY_RESEARCH = "apa_saved_research_v1";
 
     const COMPANION_TAGS = {
-      darkurge: ["Bhaal", "Bhaalspawn", "CultOfTheDeadThree", "Sacrifice", "BloodRitual", "Murder", "DeathThree", "Bhaalist", "DarkRitualSchema"],
-      astarion: ["Necromancy", "Jergal", "Myrkul", "Satire", "Patriars", "TragicRomance", "Criminology", "InfernalPacts"],
-      gale: ["Mystra", "ArcaneBiology", "IllithidResearch", "ArcaneLore", "NecromancySecrets", "Alchemy", "Lathander"],
-      shadowheart: ["Shar", "Selune", "SharranEnclave", "SubversivePropaganda", "Underdark", "Drow", "HistoricalCartography"],
-      laezel: ["Githyanki", "MilitaryStrategy", "TacticalOrders", "Crèche Yllek", "Vlaakith", "GithyankiVanguard"],
-      wyll: ["InfernalPacts", "Zariel", "SwordCoast", "FlamingFist", "Patriars", "BaldursMouth", "TieflingRefugees"],
-      karlach: ["InfernalIron", "InfernalEngineering", "Zariel", "Avernus", "Tiefling", "ElturianRefugees"]
+      darkurge: [
+        // Identity, Lineage & Relationships
+        "DarkUrge", "Dark Urge", "Bhaal", "Bhaalspawn", "Bhaalist", "Orin", "Gortash",
+        "EnverGortash", "Sarevok", "Sceleritas", "Butler", "ChosenOfBhaal",
+        // Origin Class & Combat/Ritual Themes
+        "Sorcerer", "StormSorcery", "Murder", "Assassin", "Sacrifice", "Blood",
+        "BloodRitual", "DarkRitual", "DarkArts", "Unholy", "Torture", "Slaughter",
+        "Butcher", "Corpse", "Execution", "Martyrdom", "Desecration",
+        // Factions, Deities & Condition
+        "CultOfTheDeadThree", "DeathThree", "Myrkul", "Bane", "Tadpole",
+        "Ceremorphosis", "Illithid", "MindFlayer", "Necromancy", "Amnesia"
+      ],
+
+      astarion: [
+        // Identity, Sire & Relationships
+        "Astarion", "Cazador", "Szarr", "Vellioth", "Dalyria", "Petras", "Aurelia",
+        "Leon", "Violet", "Sebastian", "Gur", "Gandrel", "Ulma",
+        // Origin Class & Vampiric Nature
+        "Rogue", "ArcaneTrickster", "Vampir", "Vampyr", "VampireSpawn", "TrueVampire",
+        "Undead", "Bloodlines", "BlackMass", "RiteOfProfaneAscension", "Ascension",
+        // Factions, City Politics & Themes
+        "Necromancy", "Thay", "IlynToth", "Jergal", "Myrkul", "Patriars",
+        "UpperCity", "LowerCity", "Magistrate", "Criminology", "Satire",
+        "TragicRomance", "InfernalPacts", "Mephistopheles"
+      ],
+
+      gale: [
+        // Identity, Patron & Relationships
+        "Gale", "Dekarios", "Mystra", "Elminster", "Tara", "Tressym", "Karsus",
+        "Lorokkan", "Lorroakan", "Rolan",
+        // Origin Class & Magical Studies
+        "Wizard", "Evocation", "Weave", "Netherese", "Netheril", "Orb",
+        "KarsusFolly", "KarsussAvatar", "CrownOfKarsus", "Arcane", "ArcaneLore",
+        "ArcaneBiology", "ArcaneStudies", "Spellcraft", "Scroll", "Grimoire",
+        // Factions, Towers & Research
+        "Waterdeep", "Blackstaff", "SorcerousSundries", "Ramazith", "Lenore",
+        "LenoreDeHurst", "ArcaneTower", "IllithidResearch", "NecromancySecrets",
+        "Alchemy", "MythDrannor", "Thultanthar"
+      ],
+
+      shadowheart: [
+        // Identity, Deities & Relationships
+        "Shadowheart", "Jenevelle", "Shar", "Selune", "Selûne", "Viconia",
+        "ViconiaDeVir", "Nocturne", "Aylin", "DameAylin", "Nightsong", "Isobel",
+        "Ketheric", "KethericThorm", "Arnells", "Emmeline",
+        // Origin Class & Theological Domains
+        "Cleric", "Trickery", "DarkJusticiar", "Justiciar", "LadyOfLoss",
+        "Moonmaiden", "SacredLiturgy", "Theology", "SubversivePropaganda",
+        "DevotionalPrayer",
+        // Factions & Locations
+        "Sharran", "SharranEnclave", "HouseOfGrief", "CloisterOfSombreEmbrace",
+        "Selunite", "SeluniteOutpost", "Grymforge", "GauntletOfShar",
+        "ShadowCursed", "ShadowCursedLands", "MoonriseTowers", "Reithwin",
+        "Underdark", "Drow", "HistoricalCartography"
+      ],
+
+      laezel: [
+        // Identity, Rulers & Relationships
+        "Laezel", "Lae'zel", "Vlaakith", "Orpheus", "Kith'rak", "Kithrak", "Voss",
+        "Therezzyn", "W'wargaz", "Wwargaz", "Varsh", "Ko'kuu", "Kokuu",
+        "Ghustil", "Stornugoss", "LadyEsther", "SocietyOfBrilliance",
+        // Origin Class & Martial Culture
+        "Fighter", "BattleMaster", "Githyanki", "Gith", "Githzerai", "Creche",
+        "Crèche", "Y'llek", "Yllek", "K'liir", "Kliir", "Tu'narath", "Tunarath",
+        "Zaith'isk", "Zaithisk", "Hshar'lak", "Hsharlak", "Ghaik",
+        // Factions, Planar Lore & Tactics
+        "Astral", "AstralPlane", "AstralPrism", "SilverSword", "RedDragon",
+        "Tiamat", "Inquisitor", "GithyankiVanguard", "GithyankiResistance",
+        "MilitaryStrategy", "MilitaryIntelligence", "TacticalOrders", "Confiscated Book"
+      ],
+
+      wyll: [
+        // Identity, Patron & Relationships
+        "Wyll", "Ravengard", "UlderRavengard", "GrandDuke", "Mizora", "Zariel",
+        "Karlach", "Florrick", "CounsellorFlorrick", "Ansur", "Balduran",
+        // Origin Class & Infernal Pact Lore
+        "Warlock", "Fiend", "BladeOfFrontiers", "BladeOfAvernus", "InfernalPacts",
+        "InfernalAndFeyContracts", "Devil", "Cambion", "BloodWar", "NineHells",
+        "Avernus",
+        // Factions, Civic Duty & Refugees
+        "FlamingFist", "SwordCoast", "BaldursGate", "Patriars", "BaldursMouth",
+        "WaukeensRest", "Elturel", "TieflingRefugees", "Wyrmway", "Dragon"
+      ],
+
+      karlach: [
+        // Identity, Captors & Relationships
+        "Karlach", "Cliffgate", "Zariel", "Gortash", "EnverGortash", "Dammon",
+        "Mizora", "Wyll", "Fytz", "Flo",
+        // Origin Class & Infernal Engine Lore
+        "Barbarian", "Berserker", "InfernalEngine", "HellionHeart", "InfernalIron",
+        "InfernalEngineering", "SoulCoin", "SoulCoins", "Metallurgy", "Hellforge",
+        // Factions, Planar History & Refugees
+        "Avernus", "NineHells", "BloodWar", "Hellriders", "Elturel", "Elturgard",
+        "ElturianRefugees", "Tiefling", "TieflingRefugees", "BlightedVillage",
+        "SteelWatch", "SteelWatcher", "Gondian"
+      ]
     };
 
     const EMBEDDED_BOH_DATA = [
