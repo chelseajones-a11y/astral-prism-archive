@@ -167,8 +167,15 @@
         </div>
       </div>
 
-      <!-- Filters & Sort Controls -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2 border-t border-zinc-800/80 font-mono text-xs">
+      <!-- Filters & Sort Controls (Now 5 Columns on Desktop with Location Provenance) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-2 border-t border-zinc-800/80 font-mono text-xs">
+        <div>
+          <label class="block text-zinc-400 text-[10px] uppercase tracking-wider mb-1">📍 Location / Region</label>
+          <select id="locationSelect" onchange="applyFilters()" class="w-full bg-zinc-950 border border-zinc-700 text-emerald-300 font-semibold px-3 py-2 rounded focus:outline-none focus:border-amber-400">
+            <option value="all">All Locations</option>
+          </select>
+        </div>
+
         <div>
           <label class="block text-zinc-400 text-[10px] uppercase tracking-wider mb-1">🎙️ Voice Narrator</label>
           <select id="narratorSelect" onchange="applyFilters()" class="w-full bg-zinc-950 border border-zinc-700 text-amber-300 font-semibold px-3 py-2 rounded focus:outline-none focus:border-amber-400">
@@ -375,9 +382,61 @@
       if (badge) badge.innerText = count;
     }
 
+    // Normalizes detailed coordinate strings into clean regional location buckets
+    function extractCleanLocation(rawCoords) {
+      if (!rawCoords || rawCoords === "Faerûn") return "Faerûn (General)";
+      // Strip coordinate suffixes like "(X: -435, Y: -15)", "X: 24 Y: 642", "at X: ..."
+      let base = rawCoords
+        .replace(/\(?\s*X\s*:.*$/i, "")
+        .replace(/\s+at\s*$/i, "")
+        .split("/")[0]
+        .trim();
+
+      // Strip container prefixes like "Heavy Chest at Abandoned Refuge" -> "Abandoned Refuge"
+      if (/\bat\s+/i.test(base)) {
+        base = base.split(/\bat\s+/i).pop().trim();
+      }
+
+      const lower = base.toLowerCase();
+      if (lower.includes("grove")) return "Emerald Grove (Druid's Grove)";
+      if (lower.includes("blighted") || lower.includes("moonhaven")) return "Blighted Village";
+      if (lower.includes("grymforge") || lower.includes("abandoned refuge")) return "Grymforge";
+      if (lower.includes("underdark")) return "Underdark";
+      if (lower.includes("risen road")) return "The Risen Road";
+      if (lower.includes("waukeen")) return "Waukeen's Rest";
+      if (lower.includes("rosymorn") || lower.includes("monastery")) return "Rosymorn Monastery";
+      if (lower.includes("refectory") || lower.includes("crypt")) return "Dank Crypt / Refectory";
+      if (lower.includes("goblin") || lower.includes("shattered sanctum")) return "Goblin Camp / Shattered Sanctum";
+      if (lower.includes("sunlit") || lower.includes("putrid") || lower.includes("bog") || lower.includes("teahouse")) return "Sunlit Wetlands / Riverside Teahouse";
+      if (lower.includes("nautiloid") || lower.includes("ravaged beach")) return "Ravaged Beach / Nautiloid";
+      if (lower.includes("crèche") || lower.includes("creche") || lower.includes("mountain pass")) return "Mountain Pass / Crèche Y'llek";
+
+      return base || "Faerûn (General)";
+    }
+
+    function populateLocationDropdown() {
+      const select = document.getElementById("locationSelect");
+      if (!select) return;
+
+      const locationCounts = new Map();
+      archiveData.forEach(item => {
+        const loc = item.cleanLocation;
+        locationCounts.set(loc, (locationCounts.get(loc) || 0) + 1);
+      });
+
+      const sortedLocations = Array.from(locationCounts.keys()).sort((a, b) =>
+        a.localeCompare(b, undefined, { sensitivity: "base" })
+      );
+
+      select.innerHTML = `<option value="all">All Locations (${archiveData.length})</option>` +
+        sortedLocations.map(loc =>
+          `<option value="${loc.replace(/"/g, '&quot;')}">${loc} (${locationCounts.get(loc)})</option>`
+        ).join("");
+    }
+
     async function fetchLocalJSON() {
       try {
-        const res = await fetch("./data.json");
+        const res = await fetch(`./data.json?v=${Date.now()}`);
         if (!res.ok) return [];
         const data = await res.json();
         return Array.isArray(data) ? data : [];
@@ -418,10 +477,7 @@
         fetchAndParseCSV(RAW_CSV_URL_BOH, "Bag of Holding")
       ]);
 
-      // Merge live BOH sheet with embedded BOH items so reclassified records are always present
       const combinedBOH = [...(dataBOH || []), ...EMBEDDED_BOH_DATA];
-
-      // Prioritize clean local data.json records, live BB CSV, and combined BOH records
       const combinedRows = [...localJsonData, ...dataBB, ...combinedBOH];
       processRecords(combinedRows);
     }
@@ -499,7 +555,6 @@
           rawContainer = itemId.toUpperCase().includes("BOH") ? "Bag of Holding" : "Book Bag";
         }
 
-        // Direct standardized .mp4 URL (zero blocking HEAD requests)
         const audioUrl = baseAudioName ? `./${baseAudioName}.mp4` : "";
 
         return {
@@ -507,6 +562,7 @@
           title: title,
           container: rawContainer,
           subLocation: coords,
+          cleanLocation: extractCleanLocation(coords),
           format: docType,
           summary: summary,
           subjects: subjects,
@@ -531,7 +587,6 @@
         return true;
       });
 
-      // Deduplicate reclassified items across containers by normalized title (normalizing curly/straight quotes)
       rawParsed.forEach(item => {
         const normTitle = item.title
           .replace(/[\u2018\u2019\u201C\u201D]/g, "'")
@@ -546,6 +601,7 @@
 
       archiveData = Array.from(seenTitles.values());
       filteredData = [...archiveData];
+      populateLocationDropdown();
       renderControlledVocabularyBar();
       renderTitleLetterBar();
       applyFilters();
@@ -559,6 +615,13 @@
     }
 
     function handleAudioError(audioEl) {
+      const sourceEl = audioEl.querySelector("source");
+      if (sourceEl && sourceEl.src.endsWith(".mp4")) {
+        sourceEl.src = sourceEl.src.replace(/\.mp4$/, ".m4a");
+        sourceEl.type = "audio/mp4";
+        audioEl.load();
+        return;
+      }
       const wrapper = audioEl.closest(".audio-player-box");
       if (wrapper) {
         wrapper.innerHTML = `<span class="text-zinc-500 font-mono text-[11px]">⏳ Archival Recording Pending</span>`;
@@ -884,6 +947,9 @@
                     <span class="text-[11px] font-mono text-zinc-400">
                       ${containerEmoji} ${item.container}
                     </span>
+                    <span class="text-[11px] font-mono text-emerald-400/80">
+                      📍 ${item.cleanLocation}
+                    </span>
                     ${item.isCensored ? `
                       <span class="wax-seal text-[10px] font-mono text-red-100 font-bold px-2 py-0.5 rounded-full border border-red-400/50">
                         🔴 Censored
@@ -951,8 +1017,8 @@
                         ${item.duration ? `<span class="text-zinc-500 ml-1">(${item.duration})</span>` : ''}
                       </div>
                       <div class="flex items-center gap-2">
-                        <audio id="audio-${item.id}" controls preload="none" onerror="handleAudioError(this)" class="h-8 max-w-[210px] sm:max-w-[250px]">
-                          <source src="${item.audioUrl}" type="video/mp4">
+                        <audio id="audio-${item.id}" controls preload="none" class="h-8 max-w-[210px] sm:max-w-[250px]">
+                          <source src="${item.audioUrl}" type="video/mp4" onerror="handleAudioError(this.parentElement)">
                         </audio>
                         <select onchange="changeAudioSpeed(this, 'audio-${item.id}')" class="bg-zinc-900 border border-zinc-700 text-amber-400 font-mono text-[10px] px-1.5 py-1 rounded focus:outline-none">
                           <option value="1" selected>1x</option>
@@ -996,6 +1062,7 @@
 
     function resetAllFilters() {
       document.getElementById('searchInput').value = '';
+      document.getElementById('locationSelect').value = 'all';
       document.getElementById('narratorSelect').value = 'all';
       document.getElementById('censoredSelect').value = 'all';
       document.getElementById('containerSelect').value = 'all';
@@ -1012,12 +1079,17 @@
 
     function applyFilters() {
       const query = document.getElementById('searchInput').value.trim().toLowerCase();
+      const locationFilter = document.getElementById('locationSelect').value;
       const narratorFilter = document.getElementById('narratorSelect').value;
       const censoredFilter = document.getElementById('censoredSelect').value;
       const containerFilter = document.getElementById('containerSelect').value;
       const sortFilter = document.getElementById('sortSelect').value;
 
       filteredData = archiveData.filter(item => {
+        if (locationFilter !== 'all' && item.cleanLocation !== locationFilter) {
+          return false;
+        }
+
         if (narratorFilter !== 'all') {
           if (!item.narrator || !item.narrator.toLowerCase().includes(narratorFilter.toLowerCase())) {
             return false;
@@ -1046,7 +1118,7 @@
         }
 
         if (query) {
-          const searchable = `${item.id} ${item.title} ${item.summary} ${item.subjects.join(' ')} ${item.text} ${item.quest} ${item.target} ${item.access} ${item.cosmology}`.toLowerCase();
+          const searchable = `${item.id} ${item.title} ${item.cleanLocation} ${item.subLocation} ${item.summary} ${item.subjects.join(' ')} ${item.text} ${item.quest} ${item.target} ${item.access} ${item.cosmology}`.toLowerCase();
           if (query.includes(' and ')) {
             const terms = query.split(' and ').map(t => t.trim());
             return terms.every(t => searchable.includes(t));
