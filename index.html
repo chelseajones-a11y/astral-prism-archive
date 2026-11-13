@@ -29,21 +29,22 @@
       background: radial-gradient(circle at 30% 30%, #ef4444, #991b1b);
       box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
     }
+    html { scroll-behavior: smooth; }
   </style>
 </head>
 <body class="min-h-screen pb-16">
 
   <!-- Header Section -->
-  <header class="border-b border-amber-500/20 bg-zinc-950/90 sticky top-0 z-40 backdrop-blur-md px-4 py-6 text-center">
+  <header class="border-b border-amber-500/20 bg-zinc-950/90 sticky top-0 z-40 backdrop-blur-md px-4 py-5 text-center">
     <div class="max-w-6xl mx-auto">
-      <h1 class="cinzel text-3xl sm:text-5xl font-black tracking-wider text-amber-400 drop-shadow-[0_2px_10px_rgba(251,191,36,0.3)] mb-2">
+      <h1 class="cinzel text-3xl sm:text-5xl font-black tracking-wider text-amber-400 drop-shadow-[0_2px_10px_rgba(251,191,36,0.3)] mb-1.5">
         ✨ ASTRAL PRISM ARCHIVE ✨
       </h1>
-      <p class="text-zinc-400 text-sm sm:text-base max-w-2xl mx-auto mb-4">
+      <p class="text-zinc-400 text-sm sm:text-base max-w-2xl mx-auto mb-3">
         Faerûn Audio Transcripts, Books, Recipes, Journals, Tomes & Field Records
       </p>
       
-      <div class="flex flex-wrap items-center justify-center gap-3 text-xs font-mono">
+      <div class="flex flex-wrap items-center justify-center gap-2.5 text-xs font-mono">
         <span class="px-3 py-1 bg-emerald-950/80 text-emerald-400 border border-emerald-500/40 rounded-full font-semibold">
           ✓ Act I: Completed
         </span>
@@ -53,31 +54,40 @@
         <span class="px-3 py-1 bg-zinc-900 text-zinc-500 border border-zinc-800 rounded-full font-semibold">
           🔒 Act III: Coming Soon
         </span>
+        <button onclick="toggleResearchDrawer()" class="px-3.5 py-1 bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-400/50 rounded-full font-bold transition flex items-center gap-1.5">
+          📑 Saved Research List (<span id="savedCountBadge">0</span>)
+        </button>
       </div>
     </div>
   </header>
 
-  <main class="max-w-6xl mx-auto px-4 mt-8 space-y-6">
+  <main class="max-w-6xl mx-auto px-4 mt-7 space-y-6">
 
     <!-- ARCHIVAL RETRIEVAL SUITE -->
     <section class="bg-zinc-900/90 border border-amber-500/30 rounded-xl p-5 shadow-2xl space-y-5">
       
-      <!-- Search Input Bar -->
-      <div class="flex flex-col sm:flex-row gap-3">
+      <!-- Search Input Bar + High-Contrast Reset -->
+      <div class="flex flex-col lg:flex-row gap-2.5">
         <div class="relative flex-1">
-          <input type="text" id="searchInput" onkeyup="executeSearch()" 
+          <input type="text" id="searchInput" oninput="debouncedSearch()" 
             placeholder="Search titles, transcripts, controlled subjects (e.g. Hag AND Bargain)..." 
             class="w-full bg-zinc-950 border border-zinc-700 text-zinc-100 placeholder-zinc-500 px-4 py-3 rounded-lg focus:outline-none focus:border-amber-400 font-mono text-sm">
         </div>
-        <button onclick="executeSearch()" class="px-6 py-3 bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold rounded-lg text-sm transition-colors cinzel">
-          Execute Search
-        </button>
-        <button onclick="toggleBooleanGuide()" class="px-4 py-3 bg-zinc-800 hover:bg-zinc-700 text-amber-400 font-mono text-xs rounded-lg border border-zinc-700 transition">
-          ℹ️ Syntax Guide
-        </button>
-        <button onclick="toggleCollectionGuide()" class="px-4 py-3 bg-zinc-800 hover:bg-zinc-700 text-amber-400 font-mono text-xs rounded-lg border border-zinc-700 transition">
-          📜 Collection Guide
-        </button>
+        <div class="flex flex-wrap gap-2">
+          <button onclick="executeSearch()" class="px-5 py-3 bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold rounded-lg text-sm transition-colors cinzel">
+            Search
+          </button>
+          <button onclick="resetAllFilters()" title="Reset search, companion, and all active filters"
+            class="px-4 py-3 bg-red-950/80 hover:bg-red-900 text-red-200 border border-red-500/60 font-mono font-bold text-xs rounded-lg transition shadow-md flex items-center gap-1.5">
+            ↺ Reset All
+          </button>
+          <button onclick="toggleBooleanGuide()" class="px-3.5 py-3 bg-zinc-800 hover:bg-zinc-700 text-amber-400 font-mono text-xs rounded-lg border border-zinc-700 transition">
+            ℹ️ Syntax
+          </button>
+          <button onclick="toggleCollectionGuide()" class="px-3.5 py-3 bg-zinc-800 hover:bg-zinc-700 text-amber-400 font-mono text-xs rounded-lg border border-zinc-700 transition">
+            📜 Collections
+          </button>
+        </div>
       </div>
 
       <!-- Collapsible Collection Difference Guide -->
@@ -178,11 +188,11 @@
         </div>
 
         <div>
-          <label class="block text-zinc-400 text-[10px] uppercase tracking-wider mb-1">🔊 Audio Stream Status</label>
-          <select id="audioSelect" onchange="applyFilters()" class="w-full bg-zinc-950 border border-zinc-700 text-zinc-200 px-3 py-2 rounded focus:outline-none focus:border-amber-400">
-            <option value="all">All Media Statuses</option>
-            <option value="hasAudio">🔊 Audio Available</option>
-            <option value="pendingAudio">⏳ Pending Audio</option>
+          <label class="block text-zinc-400 text-[10px] uppercase tracking-wider mb-1">📦 Collection Container</label>
+          <select id="containerSelect" onchange="applyFilters()" class="w-full bg-zinc-950 border border-zinc-700 text-zinc-200 px-3 py-2 rounded focus:outline-none focus:border-amber-400">
+            <option value="all">All Collections (BB & BOH)</option>
+            <option value="Book Bag">📦 Book Bag (SCL-BB)</option>
+            <option value="Bag of Holding">🛍️ Bag of Holding (SCL-BOH)</option>
           </select>
         </div>
 
@@ -203,32 +213,77 @@
           <span class="text-[10px] font-mono uppercase tracking-wider text-amber-400 font-bold">
             🏷️ Controlled Vocabulary Index (<span id="vocabCount">0</span> Subjects)
           </span>
-          <div class="flex items-center gap-3 font-mono text-[10px]">
-            <button onclick="resetAllFilters()" class="text-zinc-500 hover:text-amber-400 underline">Reset All Filters</button>
-          </div>
         </div>
 
         <!-- A-Z Letter Jump Index -->
-        <div id="letterIndexBar" class="flex flex-wrap gap-1 font-mono text-[10px] text-zinc-400 py-1">
-          <!-- Letter buttons populated dynamically -->
-        </div>
+        <div id="letterIndexBar" class="flex flex-wrap gap-1 font-mono text-[10px] text-zinc-400 py-1"></div>
 
         <!-- Vocabulary Tags Feed -->
-        <div id="controlledVocabBar" class="pt-1">
-          <!-- Injected dynamically -->
-        </div>
+        <div id="controlledVocabBar" class="pt-1"></div>
       </div>
 
     </section>
 
-    <!-- Records Feed -->
-    <section id="recordsContainer" class="grid grid-cols-1 gap-6">
+    <!-- RESULTS TOOLBAR & QUICK-SNAPSHOT POP-DOWN -->
+    <section class="bg-zinc-900/80 border border-zinc-800 rounded-xl p-4 space-y-3">
+      <div class="flex flex-wrap items-center justify-between gap-3 font-mono text-xs">
+        <div class="flex items-center gap-3">
+          <span class="text-zinc-300">
+            Showing <strong id="resultCountDisplay" class="text-amber-400 text-sm">0</strong> archival records
+          </span>
+          <button onclick="toggleQuickSnapshot()" class="px-3 py-1.5 bg-zinc-950 hover:bg-amber-950/50 text-amber-300 border border-amber-500/40 rounded-lg transition flex items-center gap-1.5">
+            📋 <span id="snapshotToggleLabel">Quick Title Snapshot</span>
+          </button>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="expandVisibleRecords()" class="px-3 py-1.5 bg-zinc-950 hover:bg-zinc-800 text-zinc-300 border border-zinc-700 rounded-lg transition">
+            ▾ Expand All
+          </button>
+          <button onclick="collapseAllRecords()" class="px-3 py-1.5 bg-zinc-950 hover:bg-zinc-800 text-zinc-300 border border-zinc-700 rounded-lg transition">
+            ▴ Collapse All
+          </button>
+        </div>
+      </div>
+
+      <!-- Collapsible Quick-Snapshot Title Directory -->
+      <div id="quickSnapshotPanel" class="hidden pt-3 border-t border-zinc-800">
+        <div class="text-[11px] font-mono text-zinc-400 mb-2">
+          Click any title below to jump directly to and expand its archival record:
+        </div>
+        <div id="quickSnapshotList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1.5 max-h-64 overflow-y-auto pr-1 font-mono text-xs"></div>
+      </div>
+    </section>
+
+    <!-- Compact Expandable Accordion Records Feed -->
+    <section id="recordsContainer" class="space-y-2.5">
       <div class="p-8 text-center bg-zinc-900 border border-zinc-800 rounded-xl font-mono text-sm text-amber-400 animate-pulse">
         ⏳ Loading unified Faerûn archival records...
       </div>
     </section>
 
   </main>
+
+  <!-- Saved Research List Drawer Modal -->
+  <div id="researchDrawer" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-end">
+    <div class="bg-zinc-900 border-l border-amber-500/40 w-full max-w-lg h-full flex flex-col shadow-2xl">
+      <div class="p-5 border-b border-zinc-800 flex items-center justify-between bg-zinc-950">
+        <div>
+          <h3 class="cinzel text-lg font-bold text-amber-400">📑 Saved Research Checklist</h3>
+          <p class="text-xs font-mono text-zinc-400">Persisted locally in your browser session</p>
+        </div>
+        <button onclick="toggleResearchDrawer()" class="text-zinc-400 hover:text-amber-400 text-2xl font-bold px-2">&times;</button>
+      </div>
+      <div class="p-3 bg-zinc-950/60 border-b border-zinc-800 flex items-center justify-between gap-2 font-mono text-xs">
+        <button onclick="exportResearchList()" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold rounded transition">
+          ⬇ Export Citations (.txt)
+        </button>
+        <button onclick="clearResearchList()" class="px-3 py-1.5 bg-zinc-900 hover:bg-red-950 text-red-300 border border-zinc-700 rounded transition">
+          Clear List
+        </button>
+      </div>
+      <div id="researchListBody" class="p-4 flex-1 overflow-y-auto space-y-3"></div>
+    </div>
+  </div>
 
   <!-- Reader Pop-Out Modal -->
   <div id="textModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
@@ -242,17 +297,15 @@
           &times;
         </button>
       </div>
-      <div id="modalBody" class="p-6 overflow-y-auto space-y-4">
-        <!-- Transcript injected dynamically -->
-      </div>
+      <div id="modalBody" class="p-6 overflow-y-auto space-y-4"></div>
     </div>
   </div>
 
   <script>
     const RAW_CSV_URL_BB  = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRvHgsh0UiBphbrCs3gOzkpAWxDREwOYG_sR7Kii-7NSq9_VpRjhUDlGNhTyuP3gQ/pub?gid=327381678&single=true&output=csv";
     const RAW_CSV_URL_BOH = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRvHgsh0UiBphbrCs3gOzkpAWxDREwOYG_sR7Kii-7NSq9_VpRjhUDIGNhTyuP3gQ/pub?gid=1506738835&single=true&output=csv";
+    const STORAGE_KEY_RESEARCH = "apa_saved_research_v1";
 
-    // Companion & Origin Recommended Subject Tags Mapping
     const COMPANION_TAGS = {
       darkurge: ["Bhaal", "Bhaalspawn", "CultOfTheDeadThree", "Sacrifice", "BloodRitual", "Murder", "DeathThree", "Bhaalist", "DarkRitualSchema"],
       astarion: ["Necromancy", "Jergal", "Myrkul", "Satire", "Patriars", "TragicRomance", "Criminology", "InfernalPacts"],
@@ -263,26 +316,60 @@
       karlach: ["InfernalIron", "InfernalEngineering", "Zariel", "Avernus", "Tiefling", "ElturianRefugees"]
     };
 
-    // Full 66 Bag of Holding Items Embedded Guarantee
     const EMBEDDED_BOH_DATA = [
-      { Item_ID: "SCL-BOH-03-01", Item_Name: "A Warning to the Sword Coast", Doc_Type: "Unbound Document (Anti-Tiefling Pamphlet)", Doc_Description: "An anti-tiefling screed printed on cheap paper.", Audio_Path: "SCL-BOH-03-01_a-warning-to-the-sword-coast_AUDIO.mp3", Duration: "1:36", Voice_Artist: "Sebastian Jones", Narrative_Summary: "An ephemeral xenophobic propaganda leaflet circulating after the Descent of Elturel.", Controlled_Vocabulary: "Domain:SocialHistory; Domain:PoliticalPropaganda; Entity:Tiefling; Entity:ElturianRefugees; Target:Karlach; Target:Wyll", BG3_Wiki_Link: "https://bg3.wiki/wiki/An_Open_Heresy", Coordinates: "The Risen Road X: 24 Y: 642", _forceContainer: "Bag of Holding" },
-      { Item_ID: "SCL-BOH-03-02", Item_Name: "An Open Heresy", Doc_Type: "Unbound Document (Pamphlet)", Doc_Description: "This pamphlet is written in bold script...", Audio_Path: "SCL-BOH-03-02_an-open-heresy_AUDIO.mp3", Duration: "1:28", Voice_Artist: "Chelsea Jones", Narrative_Summary: "A subversive theological pamphlet signed only with a black circle of Shar.", Controlled_Vocabulary: "Domain:Theology; Domain:SubversivePropaganda; Deity:Shar; Deity:Selune; Target:Shadowheart", BG3_Wiki_Link: "https://bg3.wiki/wiki/An_Open_Heresy", Coordinates: "The Risen Road X: 24 Y: 642", _forceContainer: "Bag of Holding" },
-      { Item_ID: "SCL-BOH-03-03", Item_Name: "An Open Letter on Oppression and Peacocks", Doc_Type: "Unbound Document (Letter to the Editor)", Doc_Description: "Baldur's Bash is printed in bright, bold letters...", Audio_Path: "SCL-BOH-03-03_an-open-letter-on-oppression-and-peacocks_AUDIO.mp3", Duration: "1:12", Voice_Artist: "Sebastian Jones", Narrative_Summary: "A satirical editorial letter published in Baldur's Bash critiquing Patriar elites.", Controlled_Vocabulary: "Domain:SocioPolitics; Domain:Journalism; Domain:Satire; Faction:Patriars; Target:Wyll", BG3_Wiki_Link: "https://bg3.wiki/wiki/An_Open_Letter_on_Oppression_and_Peacocks", Coordinates: "Risen Road at X: 8 Y: 547", _forceContainer: "Bag of Holding" },
-      { Item_ID: "SCL-BOH-03-04", Item_Name: "Inventory of Offerings", Doc_Type: "Unbound Document (Note)", Doc_Description: "A plain, unadorned note.", Audio_Path: "SCL-BOH-03-04_inventory-of-offerings_AUDIO.mp3", Duration: "0:08", Voice_Artist: "Chelsea Jones", Narrative_Summary: "A concise ledger note detailing ceremonial offerings at Rosymorn Monastery.", Controlled_Vocabulary: "Domain:Theology; Domain:MonasticAdministration; Deity:Lathander; Target:Laezel", BG3_Wiki_Link: "https://bg3.wiki/wiki/Inventory_of_Offerings", Coordinates: "Rosymorn Monastery X: 106 Y: 44", _forceContainer: "Bag of Holding" },
-      { Item_ID: "SCL-BOH-03-05", Item_Name: "Blacksmith's Note", Doc_Type: "Unbound Document (Note)", Doc_Description: "A blacksmith's report on an unusual metal.", Audio_Path: "SCL-BOH-03-05_blacksmiths-note_AUDIO.mp3", Duration: "0:32", Voice_Artist: "Sebastian Jones", Narrative_Summary: "A technical report describing Infernal Iron's thermal resistance.", Controlled_Vocabulary: "Domain:Metallurgy; Domain:InfernalEngineering; Item:InfernalIron; Target:Karlach", BG3_Wiki_Link: "https://bg3.wiki/wiki/Blacksmith%27s_Note", Coordinates: "Blighted Village at X: -434 Y: -370", _forceContainer: "Bag of Holding" },
-      { Item_ID: "SCL-BOH-03-06", Item_Name: "Ancient Scroll", Doc_Type: "Unbound Document (Scroll)", Doc_Description: "A mouldering scroll, containing ancient ritual fragments.", Audio_Path: "SCL-BOH-03-06_ancient-scroll_AUDIO.mp3", Duration: "0:35", Voice_Artist: "Chelsea Jones", Narrative_Summary: "A fragment of a necromantic scroll recovered from the Refectory ruins.", Controlled_Vocabulary: "Domain:Theology; Domain:Archaeology; Domain:Necromancy; Deity:Jergal; Target:Shadowheart; Target:Astarion", BG3_Wiki_Link: "https://bg3.wiki/wiki/Ancient_Scroll", Coordinates: "Refectory at X: -189 Y: -313", _forceContainer: "Bag of Holding" },
-      { Item_ID: "SCL-BOH-03-07", Item_Name: "Case File #846", Doc_Type: "Unbound Document (Court Record)", Doc_Description: "A rough copy of a court recording in faded ink.", Audio_Path: "SCL-BOH-03-07_case-file-846_AUDIO.mp3", Duration: "0:47", Voice_Artist: "Sebastian Jones", Narrative_Summary: "A faded legal transcript detailing court proceedings regarding dark cultist factions.", Controlled_Vocabulary: "Domain:Jurisprudence; Domain:Criminology; Faction:FlamingFist; Target:Astarion", BG3_Wiki_Link: "https://bg3.wiki/wiki/Case_File_846#846", Coordinates: "Waukeen's Rest at X: -48 Y: 619", _forceContainer: "Bag of Holding" },
-      { Item_ID: "SCL-BOH-03-28", Item_Name: "Regarding Strange Riders in These Parts", Doc_Type: "Unbound Document (Posted Notice)", Doc_Description: "A torn notice suggesting it was once pinned for display.", Audio_Path: "SCL-BOH-03-28_regarding-strange-riders_AUDIO.mp3", Duration: "0:45", Voice_Artist: "Chelsea Jones", Narrative_Summary: "A community warning notice detailing Githyanki patrol sightings around the Chionthar.", Controlled_Vocabulary: "Domain:CommunityNotice; Faction:GithyankiVanguard; Location:TheRisenRoad; Target:Laezel", BG3_Wiki_Link: "https://bg3.wiki/wiki/Regarding_Strange_Riders_in_These_Parts", Coordinates: "The Risen Road X: 98 Y: 520", _forceContainer: "Bag of Holding" },
-      { Item_ID: "SCL-BOH-03-54", Item_Name: "Map of Moonhaven", Doc_Type: "Map / Tactical Document", Doc_Description: "This ancient map is faded, but details of Moonhaven are visible.", Examine_Path: "SCL-BOH-03-54_map-of-moonhaven_EXAMINE.png", Full_Doc_Path: "SCL-BOH-03-54_map-of-moonhaven_DOC.png", Audio_Path: "SCL-BOH-03-54_map-of-moonhaven_AUDIO.mp3", Duration: "0:11", Voice_Artist: "Chelsea Jones", Narrative_Summary: "An ancient map outlining the settlement of Moonhaven (Blighted Village).", Controlled_Vocabulary: "Domain:HistoricalCartography; Domain:MilitaryStrategy; Location:Moonhaven; Location:BlightedVillage; Target:Shadowheart", BG3_Wiki_Link: "https://bg3.wiki/wiki/Map_of_Moonhaven", Coordinates: "Abandoned Refuge X: -611 Y: 344", _forceContainer: "Bag of Holding" },
-      { Item_ID: "SCL-BOH-03-57", Item_Name: "Dark Ritual Schema", Doc_Type: "Unbound Document (Ritual Diagram)", Doc_Description: "Blood-drawn diagrams outlining a sacrificial circle.", Audio_Path: "SCL-BOH-03-57_dark-ritual-schema_AUDIO.mp3", Duration: "0:45", Voice_Artist: "Chelsea Jones", Narrative_Summary: "A sinister schematic detailing ritual blood sacrifice dedicated to Bhaal.", Controlled_Vocabulary: "Domain:Theology; Domain:Necromancy; Deity:Bhaal; Faction:CultOfTheDeadThree; Target:Bhaalspawn; Target:DarkUrge", BG3_Wiki_Link: "https://bg3.wiki/wiki/Dark_Ritual_Schema", Coordinates: "Refectory X: -195 Y: -305", _forceContainer: "Bag of Holding" },
-      { Item_ID: "SCL-BOH-03-66", Item_Name: "Yer Axe Got Broke", Doc_Type: "Unbound Document (Humorous Note)", Doc_Description: "A crude note written in dwarven runes.", Audio_Path: "SCL-BOH-03-66_yer-axe-got-broke_AUDIO.mp3", Duration: "0:18", Voice_Artist: "Sebastian Jones", Narrative_Summary: "A complaints note left by a duergar miner whose weapon shattered on Adamantine ore.", Controlled_Vocabulary: "Domain:FolkLiterature; Entity:Dwarf; Location:Grymforge", BG3_Wiki_Link: "https://bg3.wiki/wiki/Yer_Axe_Got_Broke", Coordinates: "Grymforge Mine Shaft X: -570 Y: 310", _forceContainer: "Bag of Holding" }
+      { Item_ID: "SCL-BOH-03-01", Item_Name: "A Warning to the Sword Coast", Doc_Type: "Unbound Document (Anti-Tiefling Pamphlet)", Doc_Description: "An anti-tiefling screed printed on cheap paper.", Audio_Path: "SCL-BOH-03-01_a-warning-to-the-sword-coast_AUDIO.mp4", Duration: "1:36", Voice_Artist: "Sebastian Jones", Narrative_Summary: "An ephemeral xenophobic propaganda leaflet circulating after the Descent of Elturel.", Controlled_Vocabulary: "Domain:SocialHistory; Domain:PoliticalPropaganda; Entity:Tiefling; Entity:ElturianRefugees; Target:Karlach; Target:Wyll", BG3_Wiki_Link: "https://bg3.wiki/wiki/An_Open_Heresy", Coordinates: "The Risen Road X: 24 Y: 642", _forceContainer: "Bag of Holding" },
+      { Item_ID: "SCL-BOH-03-02", Item_Name: "An Open Heresy", Doc_Type: "Unbound Document (Pamphlet)", Doc_Description: "This pamphlet is written in bold script...", Audio_Path: "SCL-BOH-03-02_an-open-heresy_AUDIO.mp4", Duration: "1:28", Voice_Artist: "Chelsea Jones", Narrative_Summary: "A subversive theological pamphlet signed only with a black circle of Shar.", Controlled_Vocabulary: "Domain:Theology; Domain:SubversivePropaganda; Deity:Shar; Deity:Selune; Target:Shadowheart", BG3_Wiki_Link: "https://bg3.wiki/wiki/An_Open_Heresy", Coordinates: "The Risen Road X: 24 Y: 642", _forceContainer: "Bag of Holding" },
+      { Item_ID: "SCL-BOH-03-03", Item_Name: "An Open Letter on Oppression and Peacocks", Doc_Type: "Unbound Document (Letter to the Editor)", Doc_Description: "Baldur's Bash is printed in bright, bold letters...", Audio_Path: "SCL-BOH-03-03_an-open-letter-on-oppression-and-peacocks_AUDIO.mp4", Duration: "1:12", Voice_Artist: "Sebastian Jones", Narrative_Summary: "A satirical editorial letter published in Baldur's Bash critiquing Patriar elites.", Controlled_Vocabulary: "Domain:SocioPolitics; Domain:Journalism; Domain:Satire; Faction:Patriars; Target:Wyll", BG3_Wiki_Link: "https://bg3.wiki/wiki/An_Open_Letter_on_Oppression_and_Peacocks", Coordinates: "Risen Road at X: 8 Y: 547", _forceContainer: "Bag of Holding" },
+      { Item_ID: "SCL-BOH-03-04", Item_Name: "Inventory of Offerings", Doc_Type: "Unbound Document (Note)", Doc_Description: "A plain, unadorned note.", Audio_Path: "SCL-BOH-03-04_inventory-of-offerings_AUDIO.mp4", Duration: "0:08", Voice_Artist: "Chelsea Jones", Narrative_Summary: "A concise ledger note detailing ceremonial offerings at Rosymorn Monastery.", Controlled_Vocabulary: "Domain:Theology; Domain:MonasticAdministration; Deity:Lathander; Target:Laezel", BG3_Wiki_Link: "https://bg3.wiki/wiki/Inventory_of_Offerings", Coordinates: "Rosymorn Monastery X: 106 Y: 44", _forceContainer: "Bag of Holding" },
+      { Item_ID: "SCL-BOH-03-05", Item_Name: "Blacksmith's Note", Doc_Type: "Unbound Document (Note)", Doc_Description: "A blacksmith's report on an unusual metal.", Audio_Path: "SCL-BOH-03-05_blacksmiths-note_AUDIO.mp4", Duration: "0:32", Voice_Artist: "Sebastian Jones", Narrative_Summary: "A technical report describing Infernal Iron's thermal resistance.", Controlled_Vocabulary: "Domain:Metallurgy; Domain:InfernalEngineering; Item:InfernalIron; Target:Karlach", BG3_Wiki_Link: "https://bg3.wiki/wiki/Blacksmith%27s_Note", Coordinates: "Blighted Village at X: -434 Y: -370", _forceContainer: "Bag of Holding" },
+      { Item_ID: "SCL-BOH-03-06", Item_Name: "Ancient Scroll", Doc_Type: "Unbound Document (Scroll)", Doc_Description: "A mouldering scroll, containing ancient ritual fragments.", Audio_Path: "SCL-BOH-03-06_ancient-scroll_AUDIO.mp4", Duration: "0:35", Voice_Artist: "Chelsea Jones", Narrative_Summary: "A fragment of a necromantic scroll recovered from the Refectory ruins.", Controlled_Vocabulary: "Domain:Theology; Domain:Archaeology; Domain:Necromancy; Deity:Jergal; Target:Shadowheart; Target:Astarion", BG3_Wiki_Link: "https://bg3.wiki/wiki/Ancient_Scroll", Coordinates: "Refectory at X: -189 Y: -313", _forceContainer: "Bag of Holding" },
+      { Item_ID: "SCL-BOH-03-07", Item_Name: "Case File #846", Doc_Type: "Unbound Document (Court Record)", Doc_Description: "A rough copy of a court recording in faded ink.", Audio_Path: "SCL-BOH-03-07_case-file-846_AUDIO.mp4", Duration: "0:47", Voice_Artist: "Sebastian Jones", Narrative_Summary: "A faded legal transcript detailing court proceedings regarding dark cultist factions.", Controlled_Vocabulary: "Domain:Jurisprudence; Domain:Criminology; Faction:FlamingFist; Target:Astarion", BG3_Wiki_Link: "https://bg3.wiki/wiki/Case_File_846#846", Coordinates: "Waukeen's Rest at X: -48 Y: 619", _forceContainer: "Bag of Holding" },
+      { Item_ID: "SCL-BOH-03-28", Item_Name: "Regarding Strange Riders in These Parts", Doc_Type: "Unbound Document (Posted Notice)", Doc_Description: "A torn notice suggesting it was once pinned for display.", Audio_Path: "SCL-BOH-03-28_regarding-strange-riders_AUDIO.mp4", Duration: "0:45", Voice_Artist: "Chelsea Jones", Narrative_Summary: "A community warning notice detailing Githyanki patrol sightings around the Chionthar.", Controlled_Vocabulary: "Domain:CommunityNotice; Faction:GithyankiVanguard; Location:TheRisenRoad; Target:Laezel", BG3_Wiki_Link: "https://bg3.wiki/wiki/Regarding_Strange_Riders_in_These_Parts", Coordinates: "The Risen Road X: 98 Y: 520", _forceContainer: "Bag of Holding" },
+      { Item_ID: "SCL-BOH-03-54", Item_Name: "Map of Moonhaven", Doc_Type: "Map / Tactical Document", Doc_Description: "This ancient map is faded, but details of Moonhaven are visible.", Examine_Path: "SCL-BOH-03-54_map-of-moonhaven_EXAMINE.png", Full_Doc_Path: "SCL-BOH-03-54_map-of-moonhaven_DOC.png", Audio_Path: "SCL-BOH-03-54_map-of-moonhaven_AUDIO.mp4", Duration: "0:11", Voice_Artist: "Chelsea Jones", Narrative_Summary: "An ancient map outlining the settlement of Moonhaven (Blighted Village).", Controlled_Vocabulary: "Domain:HistoricalCartography; Domain:MilitaryStrategy; Location:Moonhaven; Location:BlightedVillage; Target:Shadowheart", BG3_Wiki_Link: "https://bg3.wiki/wiki/Map_of_Moonhaven", Coordinates: "Abandoned Refuge X: -611 Y: 344", _forceContainer: "Bag of Holding" },
+      { Item_ID: "SCL-BOH-03-57", Item_Name: "Dark Ritual Schema", Doc_Type: "Unbound Document (Ritual Diagram)", Doc_Description: "Blood-drawn diagrams outlining a sacrificial circle.", Audio_Path: "SCL-BOH-03-57_dark-ritual-schema_AUDIO.mp4", Duration: "0:45", Voice_Artist: "Chelsea Jones", Narrative_Summary: "A sinister schematic detailing ritual blood sacrifice dedicated to Bhaal.", Controlled_Vocabulary: "Domain:Theology; Domain:Necromancy; Deity:Bhaal; Faction:CultOfTheDeadThree; Target:Bhaalspawn; Target:DarkUrge", BG3_Wiki_Link: "https://bg3.wiki/wiki/Dark_Ritual_Schema", Coordinates: "Refectory X: -195 Y: -305", _forceContainer: "Bag of Holding" },
+      { Item_ID: "SCL-BOH-03-66", Item_Name: "Yer Axe Got Broke", Doc_Type: "Unbound Document (Humorous Note)", Doc_Description: "A crude note written in dwarven runes.", Audio_Path: "SCL-BOH-03-66_yer-axe-got-broke_AUDIO.mp4", Duration: "0:18", Voice_Artist: "Sebastian Jones", Narrative_Summary: "A complaints note left by a duergar miner whose weapon shattered on Adamantine ore.", Controlled_Vocabulary: "Domain:FolkLiterature; Entity:Dwarf; Location:Grymforge", BG3_Wiki_Link: "https://bg3.wiki/wiki/Yer_Axe_Got_Broke", Coordinates: "Grymforge Mine Shaft X: -570 Y: 310", _forceContainer: "Bag of Holding" }
     ];
 
     let archiveData = [];
     let filteredData = [];
+    let expandedIds = new Set();
+    let savedResearch = loadSavedResearch();
     let showAllVocab = false;
     let selectedLetter = "ALL";
     let selectedCompanion = null;
+    let searchDebounceTimer = null;
+
+    function loadSavedResearch() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY_RESEARCH) || "{}");
+      } catch (e) {
+        return {};
+      }
+    }
+
+    function persistSavedResearch() {
+      try {
+        localStorage.setItem(STORAGE_KEY_RESEARCH, JSON.stringify(savedResearch));
+      } catch (e) {}
+      updateSavedBadge();
+    }
+
+    function updateSavedBadge() {
+      const count = Object.keys(savedResearch).length;
+      const badge = document.getElementById("savedCountBadge");
+      if (badge) badge.innerText = count;
+    }
+
+    async function fetchLocalJSON() {
+      try {
+        const res = await fetch("./data.json");
+        if (!res.ok) return [];
+        const data = await res.json();
+        return Array.isArray(data) ? data : [];
+      } catch (e) {
+        return [];
+      }
+    }
 
     async function fetchAndParseCSV(url, defaultContainer) {
       try {
@@ -295,8 +382,7 @@
             skipEmptyLines: true,
             complete: (res) => {
               if (res.data && res.data.length > 0) {
-                const rows = res.data.map(row => ({ ...row, _forceContainer: defaultContainer }));
-                resolve(rows);
+                resolve(res.data.map(row => ({ ...row, _forceContainer: defaultContainer })));
               } else {
                 resolve([]);
               }
@@ -310,31 +396,37 @@
     }
 
     async function initArchive() {
-      let [dataBB, dataBOH] = await Promise.all([
+      updateSavedBadge();
+      let [localJsonData, dataBB, dataBOH] = await Promise.all([
+        fetchLocalJSON(),
         fetchAndParseCSV(RAW_CSV_URL_BB, "Book Bag"),
         fetchAndParseCSV(RAW_CSV_URL_BOH, "Bag of Holding")
       ]);
 
-      // If BOH live sheet fails, merge embedded BOH data explicitly
       if (!dataBOH || dataBOH.length === 0) {
         dataBOH = EMBEDDED_BOH_DATA;
       }
 
-      const combinedRows = [...dataBB, ...dataBOH];
-      processCSVResults(combinedRows);
+      // Prioritize clean local data.json records first, then live CSVs & BOH records
+      const combinedRows = [...localJsonData, ...dataBB, ...dataBOH];
+      processRecords(combinedRows);
     }
 
-    async function processCSVResults(rawData) {
+    function processRecords(rawData) {
       const seenKeys = new Set();
 
-      const parsedItems = rawData.map((row, index) => {
+      archiveData = rawData.map((row, index) => {
         const getVal = (...keys) => {
           const rowKeys = Object.keys(row);
           for (let k of keys) {
             const target = k.toLowerCase().replace(/[^a-z0-9]/g, '');
             const foundKey = rowKeys.find(rk => rk.toLowerCase().replace(/[^a-z0-9]/g, '') === target);
             if (foundKey && row[foundKey] !== undefined && row[foundKey] !== null) {
-              return String(row[foundKey]).trim();
+              const val = row[foundKey];
+              if (typeof val === "object") {
+                return (val.Subject_Headings || val.Y_Coordinates || Object.values(val).join(" ")).trim();
+              }
+              return String(val).trim();
             }
           }
           return "";
@@ -342,36 +434,47 @@
 
         const rawAudioPath = getVal("Audio_Path", "AudioPath", "Audio") || "";
         const rawItemId = getVal("Item_ID", "ItemID", "ID") || "";
-        
-        let baseAudioName = rawAudioPath.replace(/\.(mp3|m4a|wav|mp4)$/i, '');
-        if (!baseAudioName) {
-          baseAudioName = rawItemId.replace(/\.(mp3|m4a|wav|mp4)$/i, '');
+
+        let baseAudioName = rawAudioPath.replace(/\.(mp3|m4a|wav|mp4)$/i, '').trim();
+        if (!baseAudioName && rawItemId) {
+          baseAudioName = rawItemId.replace(/\.(mp3|m4a|wav|mp4)$/i, '').trim();
         }
 
         const itemId = rawItemId || baseAudioName || `RECORD-${index + 1}`;
         const title = getVal("Item_Name", "ItemName", "Item Name", "Title", "Name") || "Untitled Record";
         const docType = getVal("Doc_Type", "DocType", "Format", "Type") || "Manuscripts";
-        const summary = getVal("Narrative_Summary", "Doc_Description", "Description", "Summary") || "";
-        const text = getVal("Text", "Full_Doc_Path", "FullDocPath", "Transcript", "Content") || "";
+
+        let summary = getVal("Narrative_Summary") || "";
+        if (!summary) summary = getVal("Doc_Description", "Description", "Summary") || "";
+
+        const text = getVal("Text", "Transcript", "Content") || "";
         const examinePath = getVal("Examine_Path", "ExaminePath", "Examine") || "";
         const fullDocPath = getVal("Full_Doc_Path", "FullDocPath") || "";
-        const coords = getVal("Location_Coordinates", "X/Y_Coordinates", "Coordinates", "Location") || "Faerûn";
+
+        let coords = getVal("Location_Coordinates", "X/Y_Coordinates", "Coordinates", "Location") || "";
+        if (!coords && row.X && typeof row.X === "object" && row.X.Y_Coordinates) {
+          coords = String(row.X.Y_Coordinates).trim();
+        }
+        if (!coords) coords = "Faerûn";
+
         const rationale = getVal("Archival_Rationale", "Rationale", "Archivist Note") || "";
         const duration = getVal("Duration") || "";
-        
         const quest = getVal("Quest") || "";
         const target = getVal("Target") || "";
         const access = getVal("Access") || "";
         const cosmology = getVal("Cosmology") || "";
 
-        let narrator = getVal("Voice_Artist", "Voice Artist", "Voice_Artist", "Narrator") || "";
+        let narrator = getVal("Voice_Artist", "Voice Artist", "Narrator") || "";
         if (!narrator) {
-          narrator = itemId.includes("BOH") ? "Sebastian Jones" : "Chelsea Jones";
+          narrator = itemId.toUpperCase().includes("BOH") ? "Sebastian Jones" : "Chelsea Jones";
         }
 
         const wikiLink = getVal("BG3_Wiki_Link", "Wiki Link", "Link") || "";
         const censorshipRaw = getVal("Censorship_Status", "CensorshipStatus", "Censored", "Censorship") || "";
-        const isCensored = censorshipRaw.toLowerCase().includes("yes") || censorshipRaw.toLowerCase().includes("censored") || censorshipRaw.toLowerCase().includes("true") || censorshipRaw.toLowerCase().includes("red");
+        const isCensored = censorshipRaw.toLowerCase().includes("yes") ||
+                           censorshipRaw.toLowerCase().includes("censored") ||
+                           censorshipRaw.toLowerCase().includes("true") ||
+                           censorshipRaw.toLowerCase().includes("red");
 
         const rawSubjects = getVal("Controlled_Vocabulary", "Subject_Headings", "Subjects", "Tags") || "";
         const subjects = rawSubjects.split(/;|,/).map(s => s.trim().replace(/^#+/, '')).filter(Boolean);
@@ -380,6 +483,9 @@
         if (!rawContainer || itemId.toUpperCase().includes("BOH")) {
           rawContainer = itemId.toUpperCase().includes("BOH") ? "Bag of Holding" : "Book Bag";
         }
+
+        // Direct standardized .mp4 URL (zero blocking HEAD requests)
+        const audioUrl = baseAudioName ? `./${baseAudioName}.mp4` : "";
 
         return {
           id: itemId,
@@ -401,8 +507,7 @@
           target: target,
           access: access,
           cosmology: cosmology,
-          baseAudioName: baseAudioName,
-          hasVerifiedAudio: false
+          audioUrl: audioUrl
         };
       }).filter(item => {
         const uniqueKey = `${item.container}-${item.id}`;
@@ -411,31 +516,9 @@
         return true;
       });
 
-      archiveData = await Promise.all(parsedItems.map(async item => {
-        if (!item.baseAudioName) return item;
-        const resolvedPath = await verifyAudioFile(item.baseAudioName);
-        return { ...item, hasVerifiedAudio: resolvedPath };
-      }));
-
       filteredData = [...archiveData];
       renderControlledVocabularyBar();
       applyFilters();
-    }
-
-    async function verifyAudioFile(baseName) {
-      if (!baseName) return false;
-      const paths = [`./${baseName}`, `./src/${baseName}`];
-      const exts = ['.mp3', '.m4a'];
-
-      for (let p of paths) {
-        for (let e of exts) {
-          try {
-            const res = await fetch(`${p}${e}`, { method: 'HEAD' });
-            if (res.ok) return `${p}${e}`;
-          } catch (err) {}
-        }
-      }
-      return false;
     }
 
     function changeAudioSpeed(selectEl, audioId) {
@@ -443,6 +526,172 @@
       if (player) {
         player.playbackRate = parseFloat(selectEl.value);
       }
+    }
+
+    function handleAudioError(audioEl) {
+      const wrapper = audioEl.closest(".audio-player-box");
+      if (wrapper) {
+        wrapper.innerHTML = `<span class="text-zinc-500 font-mono text-[11px]">⏳ Archival Recording Pending</span>`;
+      }
+    }
+
+    function toggleRecordExpand(id) {
+      if (expandedIds.has(id)) {
+        expandedIds.delete(id);
+      } else {
+        expandedIds.add(id);
+      }
+      renderCards();
+    }
+
+    function expandVisibleRecords() {
+      filteredData.forEach(item => expandedIds.add(item.id));
+      renderCards();
+    }
+
+    function collapseAllRecords() {
+      expandedIds.clear();
+      renderCards();
+    }
+
+    function jumpToRecord(id) {
+      expandedIds.add(id);
+      renderCards();
+      setTimeout(() => {
+        const el = document.getElementById(`record-${id}`);
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 50);
+    }
+
+    function toggleQuickSnapshot() {
+      const panel = document.getElementById("quickSnapshotPanel");
+      const label = document.getElementById("snapshotToggleLabel");
+      const isHidden = panel.classList.toggle("hidden");
+      label.innerText = isHidden ? "Quick Title Snapshot" : "Hide Title Snapshot";
+      if (!isHidden) renderQuickSnapshot();
+    }
+
+    function renderQuickSnapshot() {
+      const list = document.getElementById("quickSnapshotList");
+      if (!list) return;
+      if (filteredData.length === 0) {
+        list.innerHTML = `<span class="text-zinc-500">No matching records.</span>`;
+        return;
+      }
+      list.innerHTML = filteredData.map(item => `
+        <button onclick="jumpToRecord('${item.id.replace(/'/g, "\\'")}')"
+          class="text-left px-2.5 py-1.5 bg-zinc-950 hover:bg-amber-950/50 border border-zinc-800 hover:border-amber-500/40 rounded truncate text-zinc-300 hover:text-amber-300 transition">
+          <span class="text-amber-400/90 font-bold">${item.id}</span> · ${item.title}
+        </button>
+      `).join('');
+    }
+
+    function toggleSaveResearch(id, event) {
+      if (event) event.stopPropagation();
+      const item = archiveData.find(i => i.id === id);
+      if (!item) return;
+
+      if (savedResearch[id]) {
+        delete savedResearch[id];
+      } else {
+        savedResearch[id] = {
+          id: item.id,
+          title: item.title,
+          container: item.container,
+          subLocation: item.subLocation,
+          narrator: item.narrator,
+          checked: false,
+          note: ""
+        };
+      }
+      persistSavedResearch();
+      renderCards();
+      renderResearchDrawer();
+    }
+
+    function toggleResearchCheck(id) {
+      if (savedResearch[id]) {
+        savedResearch[id].checked = !savedResearch[id].checked;
+        persistSavedResearch();
+        renderResearchDrawer();
+      }
+    }
+
+    function updateResearchNote(id, noteVal) {
+      if (savedResearch[id]) {
+        savedResearch[id].note = noteVal;
+        persistSavedResearch();
+      }
+    }
+
+    function clearResearchList() {
+      savedResearch = {};
+      persistSavedResearch();
+      renderCards();
+      renderResearchDrawer();
+    }
+
+    function toggleResearchDrawer() {
+      const drawer = document.getElementById("researchDrawer");
+      const isHidden = drawer.classList.toggle("hidden");
+      if (!isHidden) renderResearchDrawer();
+    }
+
+    function renderResearchDrawer() {
+      const body = document.getElementById("researchListBody");
+      const entries = Object.values(savedResearch);
+      if (entries.length === 0) {
+        body.innerHTML = `
+          <div class="p-6 text-center text-zinc-400 font-mono text-xs border border-zinc-800 rounded-lg bg-zinc-950">
+            No items saved yet. Click <strong>☆ Save</strong> on any archival record to build your reading & citation checklist.
+          </div>
+        `;
+        return;
+      }
+      body.innerHTML = entries.map(entry => `
+        <div class="p-3 bg-zinc-950 border ${entry.checked ? 'border-emerald-500/40 opacity-75' : 'border-zinc-800'} rounded-lg space-y-2">
+          <div class="flex items-start justify-between gap-2">
+            <label class="flex items-start gap-2 cursor-pointer">
+              <input type="checkbox" ${entry.checked ? 'checked' : ''} onchange="toggleResearchCheck('${entry.id.replace(/'/g, "\\'")}')"
+                class="mt-1 accent-amber-400">
+              <div>
+                <div class="font-mono text-[11px] text-amber-400 font-bold">${entry.id} • ${entry.container}</div>
+                <div class="cinzel text-sm font-bold ${entry.checked ? 'line-through text-zinc-500' : 'text-zinc-100'}">${entry.title}</div>
+                <div class="font-mono text-[10px] text-zinc-400">📍 ${entry.subLocation}</div>
+              </div>
+            </label>
+            <button onclick="toggleSaveResearch('${entry.id.replace(/'/g, "\\'")}')" class="text-zinc-500 hover:text-red-400 font-mono text-xs px-1">✕</button>
+          </div>
+          <input type="text" value="${(entry.note || '').replace(/"/g, '&quot;')}"
+            oninput="updateResearchNote('${entry.id.replace(/'/g, "\\'")}', this.value)"
+            placeholder="Add research or citation note..."
+            class="w-full bg-zinc-900 border border-zinc-800 text-zinc-200 placeholder-zinc-600 px-2.5 py-1.5 rounded font-mono text-[11px] focus:outline-none focus:border-amber-400">
+        </div>
+      `).join('');
+    }
+
+    function exportResearchList() {
+      const entries = Object.values(savedResearch);
+      if (entries.length === 0) return;
+      const lines = [
+        "ASTRAL PRISM ARCHIVE — SAVED RESEARCH CHECKLIST",
+        `Exported: ${new Date().toLocaleDateString()}`,
+        "==================================================",
+        ""
+      ];
+      entries.forEach((e, idx) => {
+        lines.push(`${idx + 1}. [${e.checked ? "X" : " "}] ${e.title} (${e.id})`);
+        lines.push(`   Collection: ${e.container} | Provenance: ${e.subLocation} | Narrator: ${e.narrator}`);
+        if (e.note) lines.push(`   Research Note: ${e.note}`);
+        lines.push("");
+      });
+      const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "astral-prism-research-checklist.txt";
+      a.click();
+      URL.revokeObjectURL(url);
     }
 
     function renderControlledVocabularyBar() {
@@ -466,13 +715,9 @@
 
       let activeSubjects = sortedSubjects;
       if (selectedLetter === "#") {
-        activeSubjects = sortedSubjects.filter(s => 
-          s.split(/\s+/).some(word => /^[0-9]/.test(word))
-        );
+        activeSubjects = sortedSubjects.filter(s => s.split(/\s+/).some(word => /^[0-9]/.test(word)));
       } else if (selectedLetter !== "ALL") {
-        activeSubjects = sortedSubjects.filter(s => 
-          s.split(/\s+/).some(word => word.toUpperCase().startsWith(selectedLetter))
-        );
+        activeSubjects = sortedSubjects.filter(s => s.split(/\s+/).some(word => word.toUpperCase().startsWith(selectedLetter)));
       }
 
       const displaySubjects = showAllVocab ? activeSubjects : activeSubjects.slice(0, 20);
@@ -504,18 +749,15 @@
     }
 
     function toggleCollectionGuide() {
-      const panel = document.getElementById('collectionGuidePanel');
-      panel.classList.toggle('hidden');
+      document.getElementById('collectionGuidePanel').classList.toggle('hidden');
     }
 
     function toggleBooleanGuide() {
-      const panel = document.getElementById('booleanGuidePanel');
-      panel.classList.toggle('hidden');
+      document.getElementById('booleanGuidePanel').classList.toggle('hidden');
     }
 
     function filterByCompanion(companionKey) {
       selectedCompanion = companionKey;
-      
       const companions = ["darkurge", "astarion", "gale", "shadowheart", "laezel", "wyll", "karlach"];
       companions.forEach(c => {
         const btn = document.getElementById(`btn-${c}`);
@@ -541,92 +783,144 @@
 
     function renderCards() {
       const container = document.getElementById('recordsContainer');
+      const countDisplay = document.getElementById('resultCountDisplay');
+      if (countDisplay) countDisplay.innerText = filteredData.length;
+
+      const snapshotPanel = document.getElementById('quickSnapshotPanel');
+      if (snapshotPanel && !snapshotPanel.classList.contains('hidden')) {
+        renderQuickSnapshot();
+      }
+
       if (filteredData.length === 0) {
         container.innerHTML = `
-          <div class="p-8 text-center bg-zinc-900 border border-zinc-800 rounded-xl">
+          <div class="p-8 text-center bg-zinc-900 border border-zinc-800 rounded-xl space-y-3">
             <p class="text-zinc-400 font-mono text-sm">No archive records match your current filter selection.</p>
+            <button onclick="resetAllFilters()" class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-zinc-950 font-mono font-bold text-xs rounded-lg transition">
+              ↺ Reset All Filters
+            </button>
           </div>
         `;
         return;
       }
 
       container.innerHTML = filteredData.map(item => {
-        const audioUrl = item.hasVerifiedAudio;
+        const isExpanded = expandedIds.has(item.id);
+        const isSaved = Boolean(savedResearch[item.id]);
         const containerEmoji = item.container.toLowerCase().includes('holding') || item.id.toUpperCase().includes('BOH') ? '🛍️' : '📦';
+        const safeId = item.id.replace(/'/g, "\\'");
 
         return `
-          <article class="bg-zinc-900 border border-zinc-800 hover:border-amber-500/40 rounded-xl p-5 transition space-y-4 shadow-lg relative overflow-hidden">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-zinc-800/80 pb-3">
-              <div>
-                <div class="flex items-center gap-2">
-                  <span class="text-xs font-mono text-amber-400 font-bold px-2 py-0.5 bg-amber-950/50 border border-amber-500/30 rounded">
-                    ${item.id}
-                  </span>
-                  ${item.isCensored ? `
-                    <span class="wax-seal text-[10px] font-mono text-red-100 font-bold px-2 py-0.5 rounded-full border border-red-400/50 flex items-center gap-1 shadow-md">
-                      🔴 Censored Record
+          <article id="record-${item.id}" class="bg-zinc-900 border ${isExpanded ? 'border-amber-500/50 shadow-xl' : 'border-zinc-800 hover:border-amber-500/30'} rounded-xl transition overflow-hidden">
+            
+            <!-- COMPACT COLLAPSED HEADER ROW (Always Rendered) -->
+            <div onclick="toggleRecordExpand('${safeId}')" class="p-4 cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3 select-none hover:bg-zinc-800/40 transition">
+              <div class="flex items-start sm:items-center gap-3 min-w-0">
+                <span class="text-amber-400 font-mono text-sm mt-0.5 sm:mt-0">${isExpanded ? '▾' : '▸'}</span>
+                <div class="min-w-0">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span class="text-[11px] font-mono text-amber-400 font-bold px-2 py-0.5 bg-amber-950/60 border border-amber-500/30 rounded">
+                      ${item.id}
                     </span>
-                  ` : ''}
+                    <span class="text-[11px] font-mono text-zinc-400">
+                      ${containerEmoji} ${item.container}
+                    </span>
+                    ${item.isCensored ? `
+                      <span class="wax-seal text-[10px] font-mono text-red-100 font-bold px-2 py-0.5 rounded-full border border-red-400/50">
+                        🔴 Censored
+                      </span>
+                    ` : ''}
+                  </div>
+                  <h2 class="cinzel text-base sm:text-lg font-bold text-zinc-100 mt-1 truncate">
+                    ${item.title}
+                  </h2>
                 </div>
-                <h2 class="cinzel text-xl font-bold text-zinc-100 mt-2">${item.title}</h2>
               </div>
-              <div class="text-right text-xs font-mono text-zinc-400 space-y-1">
-                <div>📍 <span class="text-zinc-300">${item.subLocation}</span></div>
-                <div>${containerEmoji} <span class="text-zinc-300">${item.container}</span></div>
+
+              <div class="flex items-center justify-between sm:justify-end gap-3 shrink-0 font-mono text-xs">
+                <span class="text-zinc-400 text-[11px]">
+                  🎙️ ${item.narrator}${item.duration ? ` · ${item.duration}` : ''}
+                </span>
+                <button onclick="toggleSaveResearch('${safeId}', event)"
+                  class="px-2.5 py-1 rounded border text-[11px] font-bold transition ${isSaved ? 'bg-amber-500/20 text-amber-300 border-amber-400/60' : 'bg-zinc-950 text-zinc-400 hover:text-amber-300 border-zinc-700'}">
+                  ${isSaved ? '★ Saved' : '☆ Save'}
+                </button>
               </div>
             </div>
 
-            <p class="text-sm text-zinc-300 leading-relaxed">${item.summary}</p>
+            <!-- EXPANDED DETAILS (Mounted Only When User Expands) -->
+            ${isExpanded ? `
+              <div class="px-5 pb-5 pt-3 border-t border-zinc-800/80 bg-zinc-950/40 space-y-4">
+                <div class="flex flex-wrap items-center justify-between gap-2 text-xs font-mono text-zinc-400">
+                  <span>📄 <strong class="text-zinc-300">${item.format}</strong></span>
+                  <span>📍 <span class="text-zinc-300">${item.subLocation}</span></span>
+                </div>
 
-            ${item.subjects.length ? `
-              <div class="flex flex-wrap gap-1.5 pt-1">
-                ${item.subjects.map(s => `<button onclick="filterBySubject('${s.replace(/'/g, "\\'")}')" class="px-2 py-0.5 bg-zinc-950 text-amber-300/90 hover:text-amber-400 border border-zinc-800 rounded font-mono text-[10px]">#${s}</button>`).join('')}
+                ${item.summary ? `<p class="text-sm text-zinc-300 leading-relaxed">${item.summary}</p>` : ''}
+
+                ${item.archivistNote ? `
+                  <div class="p-3 bg-zinc-950 border border-amber-500/20 rounded-lg text-xs font-mono text-amber-200/90">
+                    <strong class="text-amber-400">Archival Rationale:</strong> ${item.archivistNote}
+                  </div>
+                ` : ''}
+
+                ${item.subjects.length ? `
+                  <div class="flex flex-wrap gap-1.5">
+                    ${item.subjects.map(s => `<button onclick="filterBySubject('${s.replace(/'/g, "\\'")}')" class="px-2 py-0.5 bg-zinc-950 text-amber-300/90 hover:text-amber-400 border border-zinc-800 rounded font-mono text-[10px]">#${s}</button>`).join('')}
+                  </div>
+                ` : ''}
+
+                <!-- Card Actions & Lazy-Loaded .mp4 Audio Player -->
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-3 border-t border-zinc-800/60 text-xs">
+                  <div class="flex flex-wrap items-center gap-3">
+                    ${(item.text || item.examinePath || item.fullDocPath) ? `
+                      <button onclick="openModal('${safeId}')" class="px-3 py-1.5 bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/40 rounded font-mono transition flex items-center gap-1.5">
+                        📖 Read Transcript / Examine
+                      </button>
+                    ` : ''}
+                    ${item.wikiLink ? `
+                      <a href="${item.wikiLink}" target="_blank" rel="noopener" class="text-zinc-400 hover:text-amber-400 font-mono underline flex items-center gap-1">
+                        🔗 BG3 Wiki
+                      </a>
+                    ` : ''}
+                  </div>
+
+                  ${item.audioUrl ? `
+                    <div class="audio-player-box flex flex-col sm:flex-row sm:items-center gap-2 bg-zinc-950 p-2 border border-zinc-800 rounded-lg">
+                      <div class="text-[11px] font-mono text-amber-300/90 px-1">
+                        🎙️ <strong class="text-amber-400">${item.narrator}</strong>
+                        ${item.duration ? `<span class="text-zinc-500 ml-1">(${item.duration})</span>` : ''}
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <audio id="audio-${item.id}" controls preload="none" onerror="handleAudioError(this)" class="h-8 max-w-[210px] sm:max-w-[250px]">
+                          <source src="${item.audioUrl}" type="video/mp4">
+                        </audio>
+                        <select onchange="changeAudioSpeed(this, 'audio-${item.id}')" class="bg-zinc-900 border border-zinc-700 text-amber-400 font-mono text-[10px] px-1.5 py-1 rounded focus:outline-none">
+                          <option value="1" selected>1x</option>
+                          <option value="0.75">0.75x</option>
+                          <option value="1.25">1.25x</option>
+                          <option value="1.5">1.5x</option>
+                          <option value="2">2x</option>
+                        </select>
+                      </div>
+                    </div>
+                  ` : '<span class="text-zinc-500 font-mono text-[11px]">⏳ Archival Recording Pending</span>'}
+                </div>
               </div>
             ` : ''}
-
-            <!-- Card Actions & Audio Player Footer -->
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-3 border-t border-zinc-800/60 text-xs">
-              <div class="flex flex-wrap items-center gap-3">
-                ${(item.text || item.examinePath || item.fullDocPath) ? `
-                  <button onclick="openModal('${item.id}')" class="px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded font-mono transition flex items-center gap-1.5">
-                    📖 Read Transcript / Examine
-                  </button>
-                ` : ''}
-                ${item.wikiLink ? `
-                  <a href="${item.wikiLink}" target="_blank" class="text-zinc-400 hover:text-amber-400 font-mono underline flex items-center gap-1">
-                    🔗 BG3 Wiki
-                  </a>
-                ` : ''}
-              </div>
-
-              <!-- Audio Player & Speed Controller -->
-              ${audioUrl ? `
-                <div class="flex flex-col sm:flex-row sm:items-center gap-2 bg-zinc-950 p-2 border border-zinc-800/80 rounded-lg">
-                  <div class="text-[11px] font-mono text-amber-300/90 px-1">
-                    🎙️ <span class="text-zinc-400">Narrator:</span> <strong class="text-amber-400">${item.narrator}</strong>
-                    ${item.duration ? `<span class="text-zinc-500 ml-1">(${item.duration})</span>` : ''}
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <audio id="audio-${item.id}" controls preload="auto" class="h-8 max-w-[200px] sm:max-w-[240px]">
-                      <source src="${audioUrl}" type="${audioUrl.endsWith('.mp3') ? 'audio/mpeg' : 'audio/mp4'}">
-                    </audio>
-                    <select onchange="changeAudioSpeed(this, 'audio-${item.id}')" class="bg-zinc-900 border border-zinc-700 text-amber-400 font-mono text-[10px] px-1.5 py-1 rounded focus:outline-none">
-                      <option value="1" selected>1x</option>
-                      <option value="0.75">0.75x</option>
-                      <option value="1.25">1.25x</option>
-                      <option value="1.5">1.5x</option>
-                      <option value="2">2x</option>
-                    </select>
-                  </div>
-                </div>
-              ` : '<span class="text-zinc-500 font-mono text-[11px]">⏳ Archival Recording Pending</span>'}
-            </div>
           </article>
         `;
       }).join('');
     }
 
+    function debouncedSearch() {
+      clearTimeout(searchDebounceTimer);
+      searchDebounceTimer = setTimeout(() => {
+        applyFilters();
+      }, 180);
+    }
+
     function executeSearch() {
+      clearTimeout(searchDebounceTimer);
       applyFilters();
     }
 
@@ -644,10 +938,11 @@
       document.getElementById('searchInput').value = '';
       document.getElementById('narratorSelect').value = 'all';
       document.getElementById('censoredSelect').value = 'all';
-      document.getElementById('audioSelect').value = 'all';
+      document.getElementById('containerSelect').value = 'all';
       document.getElementById('sortSelect').value = 'titleAZ';
       selectedLetter = "ALL";
       showAllVocab = false;
+      expandedIds.clear();
       filterByCompanion(null);
       renderControlledVocabularyBar();
       applyFilters();
@@ -657,26 +952,21 @@
       const query = document.getElementById('searchInput').value.trim().toLowerCase();
       const narratorFilter = document.getElementById('narratorSelect').value;
       const censoredFilter = document.getElementById('censoredSelect').value;
-      const audioFilter = document.getElementById('audioSelect').value;
+      const containerFilter = document.getElementById('containerSelect').value;
       const sortFilter = document.getElementById('sortSelect').value;
 
       filteredData = archiveData.filter(item => {
-        // Narrator Filter
         if (narratorFilter !== 'all') {
           if (!item.narrator || !item.narrator.toLowerCase().includes(narratorFilter.toLowerCase())) {
             return false;
           }
         }
 
-        // Censorship Evaluation
         if (censoredFilter === 'censoredOnly' && !item.isCensored) return false;
         if (censoredFilter === 'uncensoredOnly' && item.isCensored) return false;
-        
-        // Audio status filter
-        if (audioFilter === 'hasAudio' && !item.hasVerifiedAudio) return false;
-        if (audioFilter === 'pendingAudio' && item.hasVerifiedAudio) return false;
 
-        // Companion Reading List Filter
+        if (containerFilter !== 'all' && item.container !== containerFilter) return false;
+
         if (selectedCompanion && COMPANION_TAGS[selectedCompanion]) {
           const tags = COMPANION_TAGS[selectedCompanion];
           const itemSearchable = `${item.title} ${item.summary} ${item.subjects.join(' ')} ${item.text} ${item.target}`.toLowerCase();
@@ -704,14 +994,13 @@
 
       const cleanTitle = (t) => (t || '').replace(/^[^a-zA-Z0-9]+/, '').toLowerCase();
 
-      // Advanced sorting modes
       if (sortFilter === 'idAsc') {
         filteredData.sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true, sensitivity: 'base' }));
       } else if (sortFilter === 'idDesc') {
         filteredData.sort((a, b) => b.id.localeCompare(a.id, undefined, { numeric: true, sensitivity: 'base' }));
       } else if (sortFilter === 'titleZA') {
         filteredData.sort((a, b) => cleanTitle(b.title).localeCompare(cleanTitle(a.title)));
-      } else { // titleAZ (Default)
+      } else {
         filteredData.sort((a, b) => cleanTitle(a.title).localeCompare(cleanTitle(b.title)));
       }
 
