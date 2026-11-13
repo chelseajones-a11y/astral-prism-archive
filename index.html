@@ -224,10 +224,10 @@
 
     </section>
 
-    <!-- RESULTS TOOLBAR & QUICK-SNAPSHOT POP-DOWN -->
+    <!-- RESULTS TOOLBAR, A-Z TITLE CLICKER & QUICK-SNAPSHOT POP-DOWN -->
     <section class="bg-zinc-900/80 border border-zinc-800 rounded-xl p-4 space-y-3">
       <div class="flex flex-wrap items-center justify-between gap-3 font-mono text-xs">
-        <div class="flex items-center gap-3">
+        <div class="flex flex-wrap items-center gap-3">
           <span class="text-zinc-300">
             Showing <strong id="resultCountDisplay" class="text-amber-400 text-sm">0</strong> archival records
           </span>
@@ -243,6 +243,18 @@
             ▴ Collapse All
           </button>
         </div>
+      </div>
+
+      <!-- A-Z Title Quick-Jump Filter Bar -->
+      <div class="pt-2 border-t border-zinc-800/70 space-y-1.5">
+        <div class="flex items-center justify-between font-mono text-[10px]">
+          <span class="text-amber-400/90 uppercase tracking-wider font-bold">🔤 Jump to Title by First Letter:</span>
+          <span id="activeTitleLetterBadge" class="hidden text-amber-300">
+            Filtering titles starting with: <strong id="activeTitleLetterValue">ALL</strong>
+            <button onclick="filterTitlesByLetter('ALL')" class="ml-2 underline text-zinc-400 hover:text-amber-300">Show All</button>
+          </span>
+        </div>
+        <div id="titleLetterIndexBar" class="flex flex-wrap gap-1 font-mono text-[11px]"></div>
       </div>
 
       <!-- Collapsible Quick-Snapshot Title Directory -->
@@ -324,6 +336,7 @@
       { Item_ID: "SCL-BOH-03-05", Item_Name: "Blacksmith's Note", Doc_Type: "Unbound Document (Note)", Doc_Description: "A blacksmith's report on an unusual metal.", Audio_Path: "SCL-BOH-03-05_blacksmiths-note_AUDIO.mp4", Duration: "0:32", Voice_Artist: "Sebastian Jones", Narrative_Summary: "A technical report describing Infernal Iron's thermal resistance.", Controlled_Vocabulary: "Domain:Metallurgy; Domain:InfernalEngineering; Item:InfernalIron; Target:Karlach", BG3_Wiki_Link: "https://bg3.wiki/wiki/Blacksmith%27s_Note", Coordinates: "Blighted Village at X: -434 Y: -370", _forceContainer: "Bag of Holding" },
       { Item_ID: "SCL-BOH-03-06", Item_Name: "Ancient Scroll", Doc_Type: "Unbound Document (Scroll)", Doc_Description: "A mouldering scroll, containing ancient ritual fragments.", Audio_Path: "SCL-BOH-03-06_ancient-scroll_AUDIO.mp4", Duration: "0:35", Voice_Artist: "Chelsea Jones", Narrative_Summary: "A fragment of a necromantic scroll recovered from the Refectory ruins.", Controlled_Vocabulary: "Domain:Theology; Domain:Archaeology; Domain:Necromancy; Deity:Jergal; Target:Shadowheart; Target:Astarion", BG3_Wiki_Link: "https://bg3.wiki/wiki/Ancient_Scroll", Coordinates: "Refectory at X: -189 Y: -313", _forceContainer: "Bag of Holding" },
       { Item_ID: "SCL-BOH-03-07", Item_Name: "Case File #846", Doc_Type: "Unbound Document (Court Record)", Doc_Description: "A rough copy of a court recording in faded ink.", Audio_Path: "SCL-BOH-03-07_case-file-846_AUDIO.mp4", Duration: "0:47", Voice_Artist: "Sebastian Jones", Narrative_Summary: "A faded legal transcript detailing court proceedings regarding dark cultist factions.", Controlled_Vocabulary: "Domain:Jurisprudence; Domain:Criminology; Faction:FlamingFist; Target:Astarion", BG3_Wiki_Link: "https://bg3.wiki/wiki/Case_File_846#846", Coordinates: "Waukeen's Rest at X: -48 Y: 619", _forceContainer: "Bag of Holding" },
+      { Item_ID: "SCL-BOH-03-12", Item_Name: "Dwarf's Poem", Doc_Type: "Scroll / Poetic Text", Doc_Description: "Lyrical poem recounting legendary dwarven halls, ancestral feats in forge and battle, and reverent devotion to Moradin.", Audio_Path: "SCL-BOH-03-12_dwarfs-poem_AUDIO.mp4", Duration: "0:34", Voice_Artist: "Sebastian Jones", Narrative_Summary: "Lyrical poem recounting legendary dwarven halls, ancestral feats in forge and battle, and reverent devotion to Moradin.", Controlled_Vocabulary: "Dwarven Culture; Poetry; Oral Traditions; Clan Lore; Moradin; Forge Lore; Grymforge; Dwarf's Poem; Manuscripts", BG3_Wiki_Link: "https://bg3.wiki/wiki/Dwarf%27s_Poem", Coordinates: "Grymforge / Underdark (X: -590, Y: 300)", Archival_Rationale: "Primary cultural heritage text. Preserves traditional dwarven literary styles and oral storytelling motifs for regional linguistic archives.", _forceContainer: "Bag of Holding" },
       { Item_ID: "SCL-BOH-03-28", Item_Name: "Regarding Strange Riders in These Parts", Doc_Type: "Unbound Document (Posted Notice)", Doc_Description: "A torn notice suggesting it was once pinned for display.", Audio_Path: "SCL-BOH-03-28_regarding-strange-riders_AUDIO.mp4", Duration: "0:45", Voice_Artist: "Chelsea Jones", Narrative_Summary: "A community warning notice detailing Githyanki patrol sightings around the Chionthar.", Controlled_Vocabulary: "Domain:CommunityNotice; Faction:GithyankiVanguard; Location:TheRisenRoad; Target:Laezel", BG3_Wiki_Link: "https://bg3.wiki/wiki/Regarding_Strange_Riders_in_These_Parts", Coordinates: "The Risen Road X: 98 Y: 520", _forceContainer: "Bag of Holding" },
       { Item_ID: "SCL-BOH-03-54", Item_Name: "Map of Moonhaven", Doc_Type: "Map / Tactical Document", Doc_Description: "This ancient map is faded, but details of Moonhaven are visible.", Examine_Path: "SCL-BOH-03-54_map-of-moonhaven_EXAMINE.png", Full_Doc_Path: "SCL-BOH-03-54_map-of-moonhaven_DOC.png", Audio_Path: "SCL-BOH-03-54_map-of-moonhaven_AUDIO.mp4", Duration: "0:11", Voice_Artist: "Chelsea Jones", Narrative_Summary: "An ancient map outlining the settlement of Moonhaven (Blighted Village).", Controlled_Vocabulary: "Domain:HistoricalCartography; Domain:MilitaryStrategy; Location:Moonhaven; Location:BlightedVillage; Target:Shadowheart", BG3_Wiki_Link: "https://bg3.wiki/wiki/Map_of_Moonhaven", Coordinates: "Abandoned Refuge X: -611 Y: 344", _forceContainer: "Bag of Holding" },
       { Item_ID: "SCL-BOH-03-57", Item_Name: "Dark Ritual Schema", Doc_Type: "Unbound Document (Ritual Diagram)", Doc_Description: "Blood-drawn diagrams outlining a sacrificial circle.", Audio_Path: "SCL-BOH-03-57_dark-ritual-schema_AUDIO.mp4", Duration: "0:45", Voice_Artist: "Chelsea Jones", Narrative_Summary: "A sinister schematic detailing ritual blood sacrifice dedicated to Bhaal.", Controlled_Vocabulary: "Domain:Theology; Domain:Necromancy; Deity:Bhaal; Faction:CultOfTheDeadThree; Target:Bhaalspawn; Target:DarkUrge", BG3_Wiki_Link: "https://bg3.wiki/wiki/Dark_Ritual_Schema", Coordinates: "Refectory X: -195 Y: -305", _forceContainer: "Bag of Holding" },
@@ -337,6 +350,7 @@
     let savedResearch = loadSavedResearch();
     let showAllVocab = false;
     let selectedLetter = "ALL";
+    let selectedTitleLetter = "ALL";
     let selectedCompanion = null;
     let searchDebounceTimer = null;
 
@@ -517,9 +531,12 @@
         return true;
       });
 
-      // Deduplicate reclassified items across containers by title (preferring Bag of Holding over legacy Book Bag)
+      // Deduplicate reclassified items across containers by normalized title (normalizing curly/straight quotes)
       rawParsed.forEach(item => {
-        const normTitle = item.title.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const normTitle = item.title
+          .replace(/[\u2018\u2019\u201C\u201D]/g, "'")
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, '');
         if (!seenTitles.has(normTitle)) {
           seenTitles.set(normTitle, item);
         } else if (item.container === "Bag of Holding") {
@@ -530,6 +547,7 @@
       archiveData = Array.from(seenTitles.values());
       filteredData = [...archiveData];
       renderControlledVocabularyBar();
+      renderTitleLetterBar();
       applyFilters();
     }
 
@@ -573,6 +591,36 @@
         const el = document.getElementById(`record-${id}`);
         if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
       }, 50);
+    }
+
+    function renderTitleLetterBar() {
+      const bar = document.getElementById("titleLetterIndexBar");
+      const badge = document.getElementById("activeTitleLetterBadge");
+      const valEl = document.getElementById("activeTitleLetterValue");
+      if (!bar) return;
+
+      const letters = ["ALL", "#", ..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"];
+      bar.innerHTML = letters.map(letter => `
+        <button onclick="filterTitlesByLetter('${letter}')"
+          class="px-2 py-0.5 rounded ${selectedTitleLetter === letter ? 'bg-amber-500 text-zinc-950 font-bold shadow' : 'bg-zinc-950 text-zinc-400 hover:text-amber-300 border border-zinc-800'} transition">
+          ${letter}
+        </button>
+      `).join('');
+
+      if (badge && valEl) {
+        if (selectedTitleLetter !== "ALL") {
+          badge.classList.remove("hidden");
+          valEl.innerText = selectedTitleLetter;
+        } else {
+          badge.classList.add("hidden");
+        }
+      }
+    }
+
+    function filterTitlesByLetter(letter) {
+      selectedTitleLetter = letter;
+      renderTitleLetterBar();
+      applyFilters();
     }
 
     function toggleQuickSnapshot() {
@@ -953,10 +1001,12 @@
       document.getElementById('containerSelect').value = 'all';
       document.getElementById('sortSelect').value = 'titleAZ';
       selectedLetter = "ALL";
+      selectedTitleLetter = "ALL";
       showAllVocab = false;
       expandedIds.clear();
       filterByCompanion(null);
       renderControlledVocabularyBar();
+      renderTitleLetterBar();
       applyFilters();
     }
 
@@ -978,6 +1028,15 @@
         if (censoredFilter === 'uncensoredOnly' && item.isCensored) return false;
 
         if (containerFilter !== 'all' && item.container !== containerFilter) return false;
+
+        if (selectedTitleLetter !== 'ALL') {
+          const cleanFirst = (item.title || '').replace(/^[^a-zA-Z0-9]+/, '');
+          if (selectedTitleLetter === '#') {
+            if (!/^[0-9]/.test(cleanFirst)) return false;
+          } else if (!cleanFirst.toUpperCase().startsWith(selectedTitleLetter)) {
+            return false;
+          }
+        }
 
         if (selectedCompanion && COMPANION_TAGS[selectedCompanion]) {
           const tags = COMPANION_TAGS[selectedCompanion];
