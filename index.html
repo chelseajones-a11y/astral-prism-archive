@@ -35,16 +35,19 @@
 <body class="min-h-screen pb-16">
 
   <!-- Header Section -->
-  <header class="border-b border-amber-500/20 bg-zinc-950/90 sticky top-0 z-40 backdrop-blur-md px-4 py-5 text-center">
+  <header class="border-b border-amber-500/20 bg-zinc-950/90 sticky top-0 z-40 backdrop-blur-md px-4 py-4 text-center">
     <div class="max-w-6xl mx-auto">
-      <h1 class="cinzel text-3xl sm:text-5xl font-black tracking-wider text-amber-400 drop-shadow-[0_2px_10px_rgba(251,191,36,0.3)] mb-1.5">
+      <h1 class="cinzel text-3xl sm:text-5xl font-black tracking-wider text-amber-400 drop-shadow-[0_2px_10px_rgba(251,191,36,0.3)] mb-1">
         ✨ ASTRAL PRISM ARCHIVE ✨
       </h1>
-      <p class="text-zinc-400 text-sm sm:text-base max-w-2xl mx-auto mb-3">
-        Faerûn Audio Transcripts, Books, Recipes, Journals, Tomes & Field Records
+      <p class="text-zinc-300 text-sm sm:text-base max-w-3xl mx-auto mb-1 font-medium">
+        Faerûn Audio Transcripts, Books, Recipes, Journals, Tomes &amp; Field Records
+      </p>
+      <p class="text-amber-300/80 text-xs max-w-2xl mx-auto mb-3">
+        A Sword Coast Library Project &bull; Curated by Paige Turner, MLIS
       </p>
       
-      <div class="flex flex-wrap items-center justify-center gap-2.5 text-xs font-mono">
+      <div class="flex flex-wrap items-center justify-center gap-2 text-xs font-mono">
         <span class="px-3 py-1 bg-emerald-950/80 text-emerald-400 border border-emerald-500/40 rounded-full font-semibold">
           ✓ Act I: Completed
         </span>
@@ -61,6 +64,92 @@
     </div>
   </header>
 
+  <main class="max-w-6xl mx-auto px-4 mt-5 space-y-4">
+
+    <!-- Dismissible Notice Stack (Compact, Non-Obstructive, Session-Persistent) -->
+    <div id="archiveNoticesStack" class="space-y-2.5">
+
+      <!-- 1. Red & Gold Content & Spoiler Advisory Banner -->
+      <div id="advisoryBanner" role="region" aria-label="Content and Spoiler Advisory" class="relative flex items-start sm:items-center justify-between gap-3 bg-gradient-to-r from-red-950/90 via-red-900/75 to-amber-950/80 border border-amber-500/60 rounded-lg px-4 py-2.5 text-xs sm:text-sm text-amber-50 shadow-md">
+        <div class="flex items-start sm:items-center gap-2.5">
+          <span class="wax-seal inline-flex items-center justify-center w-6 h-6 rounded-full text-amber-200 font-bold text-xs shrink-0 mt-0.5 sm:mt-0" aria-hidden="true">!</span>
+          <p class="leading-snug">
+            <strong class="text-amber-300 uppercase tracking-wide font-semibold">Archival Content &amp; Spoiler Advisory:</strong>
+            Primary-source texts and audio narrations from <em>Baldur’s Gate 3</em> (ESRB M / PEGI 18) contain <strong class="text-red-200">mature themes</strong> (fantasy violence, gothic horror, dark theology, adult language) preserved intact per ALA intellectual freedom standards, as well as <strong class="text-amber-200">narrative spoilers</strong>.
+          </p>
+        </div>
+        <button type="button" onclick="dismissArchiveBanner('advisoryBanner')" aria-label="Dismiss Content Advisory" title="Dismiss advisory" class="text-amber-300 hover:text-white hover:bg-red-800/60 rounded px-2 py-0.5 text-base font-bold leading-none transition shrink-0">
+          &times;
+        </button>
+      </div>
+
+      <!-- 2. Dismissible Dispatch from Paige Turner, MLIS (Attribution & Graduation Note) -->
+      <div id="curatorDispatchBanner" role="region" aria-label="Curator Note from Paige Turner, MLIS" class="relative flex items-start sm:items-center justify-between gap-3 bg-zinc-900/90 border border-amber-400/40 rounded-lg px-4 py-2.5 text-xs sm:text-sm text-zinc-200 shadow-md">
+        <div class="flex items-start sm:items-center gap-2.5">
+          <span class="text-amber-400 text-base shrink-0 mt-0.5 sm:mt-0" aria-hidden="true">📜</span>
+          <p class="leading-snug">
+            <strong class="cinzel text-amber-300 tracking-wide">Dispatch from Paige Turner, MLIS:</strong>
+            This repository was engineered by <strong class="text-white">Chelsea “CJ” Jones</strong> for her San José State University (SJSU) iSchool MLIS e-Portfolio (INFO 289). Safe travels through the stacks, and heartfelt congratulations to Chelsea on her upcoming Fall 2026 graduation!
+          </p>
+        </div>
+        <button type="button" onclick="dismissArchiveBanner('curatorDispatchBanner')" aria-label="Dismiss Curator Dispatch" title="Dismiss note" class="text-zinc-400 hover:text-amber-300 hover:bg-zinc-800 rounded px-2 py-0.5 text-base font-bold leading-none transition shrink-0">
+          &times;
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Subtle Restore Link (Appears only after banners are dismissed) -->
+    <div id="restoreNoticesBar" class="hidden text-right">
+      <button type="button" onclick="restoreArchiveBanners()" class="text-[11px] font-mono text-amber-400/80 hover:text-amber-300 underline">
+        Show Archival Advisories &amp; Curator Note
+      </button>
+    </div>
+
+    <script>
+      function dismissArchiveBanner(bannerId) {
+        const el = document.getElementById(bannerId);
+        if (el) {
+          el.classList.add('hidden');
+          try { sessionStorage.setItem('dismissed_' + bannerId, '1'); } catch (e) {}
+        }
+        updateRestoreBarVisibility();
+      }
+
+      function restoreArchiveBanners() {
+        ['advisoryBanner', 'curatorDispatchBanner'].forEach(function(id) {
+          const el = document.getElementById(id);
+          if (el) el.classList.remove('hidden');
+          try { sessionStorage.removeItem('dismissed_' + id); } catch (e) {}
+        });
+        updateRestoreBarVisibility();
+      }
+
+      function updateRestoreBarVisibility() {
+        const advHidden = document.getElementById('advisoryBanner')?.classList.contains('hidden');
+        const curHidden = document.getElementById('curatorDispatchBanner')?.classList.contains('hidden');
+        const restoreBar = document.getElementById('restoreNoticesBar');
+        if (restoreBar) {
+          if (advHidden || curHidden) {
+            restoreBar.classList.remove('hidden');
+          } else {
+            restoreBar.classList.add('hidden');
+          }
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', function() {
+        ['advisoryBanner', 'curatorDispatchBanner'].forEach(function(id) {
+          try {
+            if (sessionStorage.getItem('dismissed_' + id) === '1') {
+              const el = document.getElementById(id);
+              if (el) el.classList.add('hidden');
+            }
+          } catch (e) {}
+        });
+        updateRestoreBarVisibility();
+      });
+    </script>
   <main class="max-w-6xl mx-auto px-4 mt-7 space-y-6">
 
     <!-- ARCHIVAL RETRIEVAL SUITE -->
